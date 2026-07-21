@@ -4,32 +4,42 @@ from sqlalchemy import select
 from typing import List
 
 from app.db import get_db
-from app.models import Category
+from app.models import Category, User
 from app.schemas import CategoryCreate, CategoryUpdate, CategoryResponse
-from app.deps import verify_api_key
+from app.deps import get_current_user
 
 router = APIRouter(
     prefix="/categories",
     tags=["categories"],
-    dependencies=[Depends(verify_api_key)]
 )
 
 @router.get("", response_model=List[CategoryResponse])
-async def get_categories(db: AsyncSession = Depends(get_db)):
+async def get_categories(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     result = await db.execute(
         select(Category)
-        .filter(Category.is_active == True)
+        .filter(Category.user_id == current_user.id, Category.is_active == True)
         .order_by(Category.sort_order.asc(), Category.id.asc())
     )
     return result.scalars().all()
 
 @router.post("", response_model=CategoryResponse)
-async def create_category(category: CategoryCreate, db: AsyncSession = Depends(get_db)):
-    # Find the current max sort order to append
-    result = await db.execute(select(Category.sort_order).order_by(Category.sort_order.desc()))
+async def create_category(
+    category: CategoryCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(Category.sort_order)
+        .filter(Category.user_id == current_user.id)
+        .order_by(Category.sort_order.desc())
+    )
     max_order = result.scalars().first() or 0
 
     new_cat = Category(
+        user_id=current_user.id,
         name=category.name,
         emoji=category.emoji,
         sort_order=max_order + 1,
@@ -41,8 +51,15 @@ async def create_category(category: CategoryCreate, db: AsyncSession = Depends(g
     return new_cat
 
 @router.patch("/{id}", response_model=CategoryResponse)
-async def update_category(id: int, category: CategoryUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Category).filter(Category.id == id))
+async def update_category(
+    id: int,
+    category: CategoryUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(Category).filter(Category.id == id, Category.user_id == current_user.id)
+    )
     db_cat = result.scalar_one_or_none()
     if not db_cat:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -56,13 +73,18 @@ async def update_category(id: int, category: CategoryUpdate, db: AsyncSession = 
     return db_cat
 
 @router.delete("/{id}", response_model=CategoryResponse)
-async def delete_category(id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Category).filter(Category.id == id))
+async def delete_category(
+    id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(
+        select(Category).filter(Category.id == id, Category.user_id == current_user.id)
+    )
     db_cat = result.scalar_one_or_none()
     if not db_cat:
         raise HTTPException(status_code=404, detail="Category not found")
 
-    # Soft delete
     db_cat.is_active = False
     await db.commit()
     await db.refresh(db_cat)

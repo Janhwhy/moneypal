@@ -4,15 +4,13 @@ import { useSettings } from '../hooks/useSettings';
 import { CategoryProgressBar } from '../components/CategoryProgressBar';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
-const CURRENCY_GLYPH: Record<string, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
-
 export const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
   const { summary, categorySpend, isSummaryLoading } = useAnalytics(period);
   const { monthlySpend, isLoading: isMonthlyLoading } = useMonthlySpend(new Date().getFullYear());
   const { settings } = useSettings();
 
-  const currencyGlyph = CURRENCY_GLYPH[settings?.currency ?? 'INR'] ?? '₹';
+  const currencyGlyph = settings?.currency === 'INR' ? '₹' : settings?.currency || '₹';
   const monthlyBudget = settings?.monthly_budget ?? 0;
   const spent = Number(summary?.spent ?? 0);
   const isOverBudget = period === 'month' && monthlyBudget > 0 && spent > monthlyBudget;
@@ -44,9 +42,9 @@ export const AnalyticsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm max-w-md">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
         <button type="button" className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
@@ -56,10 +54,9 @@ export const AnalyticsPage: React.FC = () => {
         </button>
       </header>
 
-      <main className="flex-grow flex flex-col px-4 pt-[64px] pb-[100px] w-full">
-
+      <main className="flex-grow flex flex-col px-4 pt-3 pb-4 w-full">
         {/* Month Navigator */}
-        <div className="flex justify-between items-center mt-4 mb-3">
+        <div className="flex justify-between items-center mt-2 mb-3">
           <button type="button" onClick={prevMonth} className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
             <span className="material-symbols-outlined">chevron_left</span>
           </button>
@@ -128,7 +125,7 @@ export const AnalyticsPage: React.FC = () => {
                 : 'liquid-glass'
             }`}>
               <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Budget Left</span>
-              <span className={`text-[28px] font-bold leading-tight ${Number(summary.budget_left) < 0 ? 'text-error' : 'text-primary-container'}`}>
+              <span className={`text-[26px] font-bold leading-tight ${Number(summary.budget_left) < 0 ? 'text-error' : 'text-primary-container'}`}>
                 {currencyGlyph}{Math.abs(Number(summary.budget_left)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </span>
               {Number(summary.budget_left) < 0 && (
@@ -138,7 +135,7 @@ export const AnalyticsPage: React.FC = () => {
 
             <div className="liquid-glass rounded-2xl p-3 flex flex-col">
               <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Daily Avg</span>
-              <span className="text-[28px] font-bold text-primary-container leading-tight">
+              <span className="text-[26px] font-bold text-primary-container leading-tight">
                 {currencyGlyph}{Number(summary.daily_average).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </span>
               <span className="text-[11px] text-on-surface-variant mt-0.5">

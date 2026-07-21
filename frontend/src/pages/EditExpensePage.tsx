@@ -92,19 +92,19 @@ export const EditExpensePage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background text-on-surface-variant">
+      <div className="flex flex-col items-center justify-center min-h-full h-full bg-background text-on-surface-variant">
         <div className="h-8 w-8 border-4 border-pantone-686 border-t-transparent rounded-full animate-spin" />
-        <p className="font-body-lg mt-md opacity-60">Loading…</p>
+        <p className="text-sm mt-3 opacity-60">Loading…</p>
       </div>
     );
   }
 
   if (error || !expense) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-background px-gutter text-center">
-        <span className="material-symbols-outlined text-[48px] text-error opacity-60 mb-md">error</span>
-        <p className="font-body-lg text-error mb-md">Failed to load expense</p>
-        <button onClick={() => navigate(-1)} className="liquid-glass px-md py-sm rounded-full font-label-md text-label-md text-primary tap-feedback">
+      <div className="flex flex-col items-center justify-center min-h-full h-full bg-background px-4 text-center">
+        <span className="material-symbols-outlined text-[48px] text-error opacity-60 mb-2">error</span>
+        <p className="text-sm font-semibold text-error mb-3">Failed to load expense</p>
+        <button onClick={() => navigate(-1)} className="liquid-glass px-4 py-2 rounded-full text-xs font-bold text-primary tap-feedback">
           Go Back
         </button>
       </div>
@@ -114,9 +114,9 @@ export const EditExpensePage: React.FC = () => {
   const hasAmount = parseFloat(amount) > 0;
 
   return (
-    <div className="flex flex-col min-h-screen pb-[120px] max-w-md mx-auto w-full">
+    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 border-b border-on-primary-container/10 shadow-sm max-w-md">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -125,7 +125,7 @@ export const EditExpensePage: React.FC = () => {
         >
           <span className="material-symbols-outlined text-[24px]">close</span>
         </button>
-        <h1 className="font-headline-md text-headline-md font-bold text-primary tracking-tight">Edit Expense</h1>
+        <h1 className="font-bold text-lg text-primary tracking-tight">Edit Expense</h1>
         <button
           type="button"
           onClick={handleDelete}
@@ -138,21 +138,21 @@ export const EditExpensePage: React.FC = () => {
       </header>
 
       {/* Main Canvas */}
-      <main className="flex-1 flex flex-col px-gutter pb-[120px] pt-[80px] w-full justify-between overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex flex-col px-4 pb-4 pt-2 w-full justify-between overflow-y-auto no-scrollbar">
         {/* Amount */}
-        <section className="flex flex-col items-center mt-md mb-lg">
+        <section className="flex flex-col items-center py-2">
           <AmountDisplay amount={amount} currency={settings?.currency || 'INR'} />
         </section>
 
         {/* Category Chips */}
-        <section className="mb-lg w-full">
+        <section className="mb-3 w-full">
           <CategoryChips categories={categories} selectedId={selectedCategoryId} onSelect={setSelectedCategoryId} />
         </section>
 
         {/* Note + Date */}
-        <section className="mb-md w-full px-xs space-y-sm">
+        <section className="mb-3 w-full space-y-2">
           <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60 pointer-events-none pl-sm">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60 pointer-events-none text-[18px]">
               edit_note
             </span>
             <input
@@ -160,41 +160,41 @@ export const EditExpensePage: React.FC = () => {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add a note..."
-              className="w-full liquid-glass rounded-2xl py-sm pl-[44px] pr-sm text-on-surface font-body-lg text-body-lg focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-50"
+              className="w-full liquid-glass rounded-xl py-2 pl-9 pr-3 text-on-surface text-[14px] focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-50"
             />
           </div>
-          <div className="flex items-center liquid-glass rounded-2xl py-sm px-md gap-sm">
-            <span className="material-symbols-outlined text-on-surface-variant opacity-60 text-[20px]">calendar_today</span>
+          <div className="flex items-center liquid-glass rounded-xl py-2 px-3 gap-2">
+            <span className="material-symbols-outlined text-on-surface-variant opacity-60 text-[18px]">calendar_today</span>
             <input
               type="datetime-local"
               value={occurredAt}
               onChange={(e) => setOccurredAt(e.target.value)}
-              className="bg-transparent text-on-surface font-body-lg text-body-lg focus:outline-none flex-1 appearance-none"
+              className="bg-transparent text-on-surface text-[14px] font-medium focus:outline-none flex-1 appearance-none"
             />
           </div>
         </section>
 
         {/* Keypad + Controls */}
-        <section className="flex flex-col gap-sm w-full mt-auto liquid-glass rounded-3xl p-md">
+        <section className="flex flex-col gap-2 w-full mt-auto liquid-glass rounded-2xl p-3">
           <Numpad onKeyPress={handleKeyPress} />
-          <div className="flex justify-center mt-sm">
+          <div className="flex justify-center">
             <PaymentToggle method={paymentMethod} onChange={setPaymentMethod} />
           </div>
           <button
             type="button"
             disabled={!hasAmount || isSaving || selectedCategoryId === null}
             onClick={handleSave}
-            className={`w-full h-[56px] rounded-full font-headline-md text-[18px] flex items-center justify-center gap-sm mt-sm transition-all shadow-md tap-feedback ${
+            className={`w-full h-11 rounded-full text-[15px] font-semibold flex items-center justify-center gap-2 transition-all shadow-md tap-feedback ${
               hasAmount && selectedCategoryId !== null
                 ? 'bg-pantone-686 text-white hover:opacity-90 active:scale-95'
                 : 'bg-pantone-686/30 text-white/50 cursor-not-allowed'
             }`}
           >
-            <span className="material-symbols-outlined">check_circle</span>
+            <span className="material-symbols-outlined text-[18px]">check_circle</span>
             {isSaving ? 'Saving…' : 'Save Changes'}
           </button>
         </section>
-      </main>
+      </div>
     </div>
   );
 };

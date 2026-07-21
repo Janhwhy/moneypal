@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useExpenses } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
-import { useAnalytics } from '../hooks/useExpenses';
 import { ExpenseListItem } from '../components/ExpenseListItem';
 import type { Expense } from '../api/types';
 
@@ -17,38 +16,42 @@ export const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
   const [range, setRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
   const [search, setSearch] = useState('');
-  const { expenses, isLoading } = useExpenses({ range });
+  const { expenses, isLoading, error } = useExpenses({ range });
   const { settings } = useSettings();
-  const { summary } = useAnalytics('month');
 
   const currencyGlyph = settings?.currency === 'INR' ? '₹' : settings?.currency || '₹';
-  const monthlyBudget = settings?.monthly_budget ?? 0;
+  const monthlyBudget = Number(settings?.monthly_budget || 0);
+
+  const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
   const filtered = search.trim()
-    ? expenses.filter(
+    ? safeExpenses.filter(
         (e) =>
-          (e.category?.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
-          (e.note ?? '').toLowerCase().includes(search.toLowerCase())
+          (e?.category?.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+          (e?.note ?? '').toLowerCase().includes(search.toLowerCase())
       )
-    : expenses;
+    : safeExpenses;
 
   const groupExpensesByDay = (expenseList: Expense[]) => {
     const groups: Record<string, { date: Date; items: Expense[]; total: number }> = {};
-    expenseList.forEach((exp) => {
+    (expenseList || []).forEach((exp) => {
+      if (!exp || !exp.occurred_at) return;
       const date = new Date(exp.occurred_at);
+      if (isNaN(date.getTime())) return;
       const key = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
       if (!groups[key]) groups[key] = { date, items: [], total: 0 };
       groups[key].items.push(exp);
-      groups[key].total += Number(exp.amount);
+      groups[key].total += Number(exp.amount || 0);
     });
     return Object.entries(groups).sort((a, b) => b[1].date.getTime() - a[1].date.getTime());
   };
 
   const grouped = groupExpensesByDay(filtered);
-  const totalSpent = filtered.reduce((sum, e) => sum + Number(e.amount), 0);
+  const totalSpent = filtered.reduce((sum, e) => sum + Number(e?.amount || 0), 0);
   const isOverBudget = range === 'month' && monthlyBudget > 0 && totalSpent > monthlyBudget;
 
   const getDateLabel = (date: Date) => {
+    if (!date || isNaN(date.getTime())) return 'Unknown Date';
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -60,9 +63,9 @@ export const HistoryPage: React.FC = () => {
   const ranges: ('today' | 'week' | 'month' | 'all')[] = ['today', 'week', 'month', 'all'];
 
   return (
-    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm max-w-md">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
         <span className="w-6" />
         <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
         <button
@@ -75,18 +78,17 @@ export const HistoryPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col px-4 pt-[64px] pb-[140px] w-full">
-
+      <main className="flex-grow flex flex-col px-4 pt-3 pb-4 w-full">
         {/* Over budget alert */}
         {isOverBudget && (
-          <div className="mt-3 flex items-center gap-2 bg-error/10 border border-error/30 text-error rounded-xl px-4 py-2.5 text-sm font-semibold">
+          <div className="mb-3 flex items-center gap-2 bg-error/10 border border-error/30 text-error rounded-xl px-4 py-2.5 text-sm font-semibold">
             <span className="material-symbols-outlined text-[18px]">warning</span>
             Over budget by {currencyGlyph}{(totalSpent - monthlyBudget).toLocaleString('en-IN', { maximumFractionDigits: 0 })} this month!
           </div>
         )}
 
         {/* Search Bar */}
-        <div className="relative mt-3 mb-3">
+        <div className="relative mb-3">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <span className="material-symbols-outlined text-outline text-[18px]">search</span>
           </div>
@@ -95,7 +97,7 @@ export const HistoryPage: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search transactions"
-            placeholder="Search"
+            placeholder="Search transactions..."
             className="w-full bg-surface-container-highest/50 border-none focus:ring-2 focus:ring-pantone-686 text-on-surface py-2 pl-9 pr-3 rounded-[10px] transition-all text-[15px] outline-none placeholder:text-outline/70"
           />
         </div>
@@ -119,7 +121,7 @@ export const HistoryPage: React.FC = () => {
         </div>
 
         {/* Transaction List */}
-        <div className="space-y-6">
+        <div className="space-y-4">
           {isLoading ? (
             [1, 2, 3].map((n) => (
               <div key={n} className="space-y-2">
@@ -127,6 +129,11 @@ export const HistoryPage: React.FC = () => {
                 <div className="h-14 w-full liquid-glass rounded-[14px] animate-pulse" />
               </div>
             ))
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-16 text-error select-none">
+              <span className="material-symbols-outlined text-[44px] mb-2 opacity-60">error</span>
+              <p className="text-[15px] font-semibold">Failed to load transactions</p>
+            </div>
           ) : grouped.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant select-none">
               <span className="material-symbols-outlined text-[44px] mb-2 opacity-40">event_busy</span>
@@ -135,9 +142,14 @@ export const HistoryPage: React.FC = () => {
           ) : (
             grouped.map(([dateLabel, group]) => (
               <section key={dateLabel}>
-                <h2 className="text-[11px] font-semibold text-on-surface-variant mb-1.5 px-1 uppercase tracking-wider">
-                  {getDateLabel(group.date)}
-                </h2>
+                <div className="flex justify-between items-center px-1 mb-1.5">
+                  <h2 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+                    {getDateLabel(group.date)}
+                  </h2>
+                  <span className="text-[12px] font-bold text-primary-container">
+                    {currencyGlyph}{(group.total || 0).toFixed(2)}
+                  </span>
+                </div>
                 <div className="liquid-glass rounded-[14px] overflow-hidden">
                   {group.items.map((item) => (
                     <ExpenseListItem
@@ -153,8 +165,8 @@ export const HistoryPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Floating Total */}
-      <div className="fixed bottom-[80px] left-4 right-4 max-w-[calc(448px-32px)] mx-auto z-30">
+      {/* Floating Total Bar */}
+      <div className="sticky bottom-[80px] my-2 mx-4 z-30">
         <div className={`rounded-2xl p-3 px-4 flex justify-between items-center font-semibold text-[15px] ${
           isOverBudget
             ? 'bg-error/15 border border-error/30 text-error'

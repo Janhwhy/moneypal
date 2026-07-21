@@ -3,7 +3,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///../tappy.db"
-    API_SECRET: str = "tappy_secret_key"
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    JWT_SECRET: str = "moneypal_jwt_fallback_secret"
+    JWT_EXPIRE_MINUTES: int = 10080  # 7 days
 
     model_config = SettingsConfigDict(
         env_file=".env",

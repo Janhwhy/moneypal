@@ -3,7 +3,24 @@ from datetime import datetime
 from typing import Optional
 from decimal import Decimal
 
-# Category Schemas
+# ── Auth / User Schemas ──────────────────────────────────────────────────────
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    name: str
+    picture: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+# ── Category Schemas ─────────────────────────────────────────────────────────
+
 class CategoryBase(BaseModel):
     name: str
     emoji: str
@@ -26,11 +43,12 @@ class CategoryResponse(CategoryBase):
     class Config:
         from_attributes = True
 
-# Expense Schemas
+# ── Expense Schemas ──────────────────────────────────────────────────────────
+
 class ExpenseCreate(BaseModel):
     category_id: int
     amount: Decimal = Field(..., max_digits=12, decimal_places=2)
-    payment_method: str = "cash"  # "cash" | "credit"
+    payment_method: str = "cash"  # "cash" | "upi"
     note: Optional[str] = None
     occurred_at: Optional[datetime] = None
 
@@ -55,7 +73,8 @@ class ExpenseResponse(BaseModel):
     class Config:
         from_attributes = True
 
-# Settings Schemas
+# ── Settings Schemas ─────────────────────────────────────────────────────────
+
 class SettingBase(BaseModel):
     monthly_budget: Decimal = Field(..., max_digits=12, decimal_places=2)
     currency: str
@@ -70,7 +89,8 @@ class SettingResponse(SettingBase):
     class Config:
         from_attributes = True
 
-# Analytics Response Schemas
+# ── Analytics Response Schemas ───────────────────────────────────────────────
+
 class SummaryResponse(BaseModel):
     spent: Decimal
     budget_left: Decimal
@@ -85,5 +105,5 @@ class CategorySpendItem(BaseModel):
     percent: float
 
 class MonthSpendItem(BaseModel):
-    month: str  # e.g., "2026-07"
+    month: str  # e.g., "Jan"
     amount: Decimal

@@ -11,7 +11,7 @@ export const BottomNav: React.FC = () => {
   const location = useLocation();
 
   return (
-    <nav className="liquid-glass rounded-t-3xl border-t border-on-primary-container/10 shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4">
+    <nav className="liquid-glass rounded-t-3xl border-t border-on-primary-container/10 shadow-lg absolute bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 safe-pb select-none">
       {NAV_ITEMS.map((item) => {
         const isActive =
           item.to === '/'
@@ -23,7 +23,7 @@ export const BottomNav: React.FC = () => {
             key={item.to}
             to={item.to}
             aria-label={item.label}
-            className={`flex flex-col items-center justify-center rounded-full transition-all duration-300 ease-out active:scale-90 ${
+            className={`flex flex-col items-center justify-center rounded-full transition-all duration-300 ease-out tap-feedback ${
               isActive
                 ? 'bg-secondary-container/40 text-on-secondary-container px-5 py-2 backdrop-blur-md border border-secondary-container/50 shadow-inner'
                 : 'text-on-surface-variant px-4 py-1.5 hover:bg-on-surface/5'

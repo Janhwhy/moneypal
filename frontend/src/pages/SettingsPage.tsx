@@ -4,6 +4,13 @@ import { useCategories } from '../hooks/useCategories';
 import { useSettings } from '../hooks/useSettings';
 import { request, getExportUrl } from '../api/client';
 
+const POPULAR_EMOJIS = [
+  '🍕', '🍔', '☕', '🛒', '🚗', '🏠', '🎮', '💊', '✈️', '💡',
+  '🍿', '👕', '🛍️', '🎁', '🏋️', '🐶', '🎓', '📚', '💼', '💸',
+  '🍦', '🥐', '🍺', '🍷', '💄', '📱', '🎧', '💻', '🚲', '⛽',
+  '🧹', '🛋️', '🔑', '📶', '🎬', '🎵', '⚽', '🎨', '🎲', '🏥'
+];
+
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { categories, createCategory, updateCategory, deleteCategory } = useCategories();
@@ -13,7 +20,6 @@ export const SettingsPage: React.FC = () => {
   const [currency, setCurrency] = useState(settings?.currency ?? 'INR');
   const [saveFeedback, setSaveFeedback] = useState(false);
 
-  // Sync when settings load
   useEffect(() => {
     if (settings) {
       setBudget(String(settings.monthly_budget));
@@ -23,7 +29,8 @@ export const SettingsPage: React.FC = () => {
 
   // New category state
   const [newCatName, setNewCatName] = useState('');
-  const [newCatEmoji, setNewCatEmoji] = useState('');
+  const [newCatEmoji, setNewCatEmoji] = useState('📁');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   const handleSaveSettings = async () => {
@@ -42,7 +49,8 @@ export const SettingsPage: React.FC = () => {
     try {
       await createCategory({ name: newCatName.trim(), emoji: newCatEmoji.trim() || '📁' });
       setNewCatName('');
-      setNewCatEmoji('');
+      setNewCatEmoji('📁');
+      setShowEmojiPicker(false);
     } catch (err) {
       console.error('Failed to create category:', err);
     } finally {
@@ -95,9 +103,9 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+    <div className="flex flex-col w-full min-h-full pb-[85px] select-none relative">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 border-b border-on-primary-container/10 shadow-sm max-w-md">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -111,42 +119,42 @@ export const SettingsPage: React.FC = () => {
       </header>
 
       {/* Main */}
-      <main className="flex-grow flex flex-col gap-md px-gutter pt-[80px] pb-[120px] w-full">
+      <main className="flex-grow flex flex-col gap-4 px-4 pt-3 pb-4 w-full">
         {/* Page title */}
-        <div className="px-sm pt-xl pb-base">
-          <h2 className="font-display-lg-mobile text-display-lg-mobile text-primary mb-base">Settings</h2>
-          <p className="font-body-lg text-on-surface-variant">Manage your financial environment.</p>
+        <div className="pt-2 pb-1">
+          <h2 className="text-2xl font-bold text-primary tracking-tight">Settings</h2>
+          <p className="text-xs text-on-surface-variant">Manage your financial environment.</p>
         </div>
 
         {/* Budgeting */}
-        <section className="flex flex-col gap-base">
-          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Budgeting</h3>
+        <section className="flex flex-col gap-2">
+          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Budgeting</h3>
           <div className="ios-list-group">
-            <div className="ios-list-item px-md py-sm flex items-center justify-between">
-              <label className="font-body-lg text-on-surface" htmlFor="monthly-budget">Monthly Budget</label>
+            <div className="ios-list-item px-4 py-3 flex items-center justify-between">
+              <label className="text-sm font-semibold text-on-surface" htmlFor="monthly-budget">Monthly Budget</label>
               <div className="flex items-center">
-                <span className="text-on-surface-variant font-body-lg mr-xs">{currency === 'INR' ? '₹' : currency}</span>
+                <span className="text-on-surface-variant text-sm font-semibold mr-1">{currency === 'INR' ? '₹' : currency}</span>
                 <input
                   id="monthly-budget"
                   type="number"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
-                  className="input-minimal w-28 font-body-lg text-pantone-686 focus:ring-0 m-0"
+                  className="bg-transparent border-none outline-none w-24 text-right font-bold text-pantone-686 text-base"
                   placeholder="10000"
                 />
               </div>
             </div>
 
             {/* Currency */}
-            <div className="ios-list-item px-md py-sm flex items-center justify-between">
-              <span className="font-body-lg text-on-surface">Currency</span>
-              <div className="flex gap-xs">
+            <div className="ios-list-item px-4 py-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-on-surface">Currency</span>
+              <div className="flex gap-1">
                 {currencies.map((c) => (
                   <button
                     key={c.code}
                     type="button"
                     onClick={() => setCurrency(c.code)}
-                    className={`px-sm py-xs rounded-full font-label-md text-label-md transition-all tap-feedback ${
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all tap-feedback ${
                       currency === c.code
                         ? 'bg-pantone-686/50 text-primary border border-pantone-686/30'
                         : 'bg-white/40 text-on-surface-variant border border-white/60'
@@ -161,11 +169,11 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             onClick={handleSaveSettings}
-            className={`w-full liquid-glass text-pantone-686 rounded-xl min-h-[48px] flex items-center justify-center gap-sm hover:opacity-90 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback ${
+            className={`w-full liquid-glass text-pantone-686 rounded-xl min-h-[44px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all text-sm font-bold tap-feedback ${
               saveFeedback ? 'bg-on-primary-container/20 text-on-primary-container' : ''
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">
+            <span className="material-symbols-outlined text-[18px]">
               {saveFeedback ? 'check_circle' : 'save'}
             </span>
             {saveFeedback ? 'Saved!' : 'Save Preferences'}
@@ -173,21 +181,21 @@ export const SettingsPage: React.FC = () => {
         </section>
 
         {/* Categories */}
-        <section className="flex flex-col gap-base mt-md">
-          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Categories</h3>
+        <section className="flex flex-col gap-2 mt-2">
+          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Categories</h3>
           <div className="ios-list-group">
             {categories.map((cat, idx) => (
-              <div key={cat.id} className="ios-list-item px-md py-sm flex items-center justify-between">
-                <div className="flex items-center gap-sm">
-                  <span className="text-lg">{cat.emoji}</span>
-                  <span className="font-body-lg text-on-surface">{cat.name}</span>
+              <div key={cat.id} className="ios-list-item px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">{cat.emoji}</span>
+                  <span className="text-sm font-semibold text-on-surface">{cat.name}</span>
                 </div>
-                <div className="flex items-center gap-xs">
+                <div className="flex items-center gap-1">
                   <button
                     type="button"
                     disabled={idx === 0}
                     onClick={() => handleMoveCategory(idx, 'up')}
-                    className="p-xs text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
+                    className="p-1 text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
                   </button>
@@ -195,7 +203,7 @@ export const SettingsPage: React.FC = () => {
                     type="button"
                     disabled={idx === categories.length - 1}
                     onClick={() => handleMoveCategory(idx, 'down')}
-                    className="p-xs text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
+                    className="p-1 text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
                   </button>
@@ -203,7 +211,7 @@ export const SettingsPage: React.FC = () => {
                     type="button"
                     onClick={() => handleDeleteCategory(cat.id, cat.name)}
                     aria-label={`Delete ${cat.name}`}
-                    className="p-xs text-pantone-686 hover:opacity-80 active:scale-95 transition-all"
+                    className="p-1 text-pantone-686 hover:opacity-80 active:scale-95 transition-all"
                   >
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                   </button>
@@ -212,51 +220,81 @@ export const SettingsPage: React.FC = () => {
             ))}
 
             {/* Add New Category row */}
-            <form onSubmit={handleAddCategory} className="ios-list-item px-md py-sm flex items-center gap-sm">
-              <input
-                type="text"
-                value={newCatEmoji}
-                onChange={(e) => setNewCatEmoji(e.target.value)}
-                placeholder="😊"
-                className="w-10 text-center bg-transparent border-none outline-none text-lg"
-                maxLength={2}
-              />
+            <form onSubmit={handleAddCategory} className="ios-list-item px-4 py-2.5 flex items-center gap-2 relative">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+                title="Select Emoji"
+                className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/50 border border-white/80 text-lg hover:bg-white/80 active:scale-95 transition-all tap-feedback shrink-0"
+              >
+                {newCatEmoji}
+              </button>
               <input
                 type="text"
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
                 placeholder="New category name..."
-                className="flex-1 bg-transparent border-none outline-none font-body-lg text-on-surface placeholder:text-on-surface-variant/50"
+                className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-on-surface placeholder:text-on-surface-variant/50"
               />
               <button
                 type="submit"
                 disabled={isAddingCategory || !newCatName.trim()}
-                className="text-pantone-686 hover:opacity-80 active:scale-95 transition-all disabled:opacity-30"
+                className="text-pantone-686 hover:opacity-80 active:scale-95 transition-all disabled:opacity-30 p-1"
               >
-                <span className="material-symbols-outlined text-[20px]">add_circle</span>
+                <span className="material-symbols-outlined text-[24px]">add_circle</span>
               </button>
             </form>
           </div>
+
+          {/* Emoji Picker Grid Popover */}
+          {showEmojiPicker && (
+            <div className="liquid-glass rounded-2xl p-3 shadow-xl border border-white/80 transition-all animate-fadeIn mt-1">
+              <div className="flex justify-between items-center mb-2 px-1">
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Choose Icon Emoji</span>
+                <button
+                  type="button"
+                  onClick={() => setShowEmojiPicker(false)}
+                  className="text-on-surface-variant hover:text-on-surface text-xs font-bold px-1.5 py-0.5 rounded-full hover:bg-white/40"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-8 gap-1.5 max-h-40 overflow-y-auto no-scrollbar p-1">
+                {POPULAR_EMOJIS.map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => {
+                      setNewCatEmoji(emoji);
+                      setShowEmojiPicker(false);
+                    }}
+                    className={`h-9 w-9 flex items-center justify-center text-lg rounded-xl hover:bg-white/60 active:scale-95 transition-all tap-feedback ${
+                      newCatEmoji === emoji ? 'bg-pantone-686/40 border border-pantone-686/50' : 'bg-white/30'
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Data Management */}
-        <section className="flex flex-col gap-base mt-md">
-          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Data Management</h3>
+        <section className="flex flex-col gap-2 mt-2">
+          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Data Management</h3>
           <button
             type="button"
             onClick={handleExport}
-            className="liquid-glass w-full text-pantone-686 rounded-xl min-h-[56px] flex items-center justify-center gap-sm hover:opacity-90 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback"
+            className="liquid-glass w-full text-pantone-686 rounded-xl min-h-[48px] flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all text-sm font-bold tap-feedback"
           >
-            <span className="material-symbols-outlined">download</span>
+            <span className="material-symbols-outlined text-[18px]">download</span>
             Export to CSV
           </button>
-          <p className="font-body-sm text-on-surface-variant text-center opacity-70">
-            Download your complete transaction history.
-          </p>
           <button
             type="button"
             onClick={handleClearData}
-            className="w-full border border-error/30 bg-error/5 text-error rounded-xl min-h-[48px] flex items-center justify-center gap-sm hover:bg-error/10 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback"
+            className="w-full border border-error/30 bg-error/5 text-error rounded-xl min-h-[44px] flex items-center justify-center gap-2 hover:bg-error/10 active:scale-[0.98] transition-all text-sm font-bold tap-feedback"
           >
             <span className="material-symbols-outlined text-[18px]">delete_forever</span>
             Reset All Data
@@ -264,9 +302,9 @@ export const SettingsPage: React.FC = () => {
         </section>
 
         {/* Footer */}
-        <div className="text-center font-body-sm text-on-surface-variant opacity-50 py-md">
+        <div className="text-center text-xs text-on-surface-variant opacity-60 py-3">
           <p>MoneyPal — Serene Ledger</p>
-          <p className="mt-xs">Version 1.0.0 · Local Database Mode</p>
+          <p className="mt-0.5">Version 1.0.0 · Local Database Mode</p>
         </div>
       </main>
     </div>

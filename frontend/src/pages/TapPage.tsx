@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useExpenses } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
+import { AmountDisplay } from '../components/AmountDisplay';
 import { CategoryChips } from '../components/CategoryChips';
 import { PaymentToggle } from '../components/PaymentToggle';
 import { Numpad } from '../components/Numpad';
-
-const CURRENCY_GLYPH: Record<string, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
 export const TapPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,8 +16,8 @@ export const TapPage: React.FC = () => {
 
   const [amount, setAmount] = useState('0');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>(() => {
-    return (localStorage.getItem('moneypal_payment_method') as 'cash' | 'credit') || 'cash';
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi'>(() => {
+    return (localStorage.getItem('moneypal_payment_method') as 'cash' | 'upi') || 'cash';
   });
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -50,7 +49,7 @@ export const TapPage: React.FC = () => {
     });
   };
 
-  const handlePaymentMethodChange = (method: 'cash' | 'credit') => {
+  const handlePaymentMethodChange = (method: 'cash' | 'upi') => {
     setPaymentMethod(method);
     localStorage.setItem('moneypal_payment_method', method);
   };
@@ -78,118 +77,96 @@ export const TapPage: React.FC = () => {
   };
 
   const hasAmount = parseFloat(amount) > 0;
-  const glyph = CURRENCY_GLYPH[settings?.currency || 'INR'] ?? '₹';
-  const numVal = parseFloat(amount);
-  const formatted = isNaN(numVal) || numVal === 0
-    ? `${glyph}0.00`
-    : `${glyph}${numVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div
-      className="flex flex-col max-w-md mx-auto w-full"
-      style={{ height: '100dvh', overflow: 'hidden' }}
-    >
-      {/* Fixed Header */}
-      <header className="flex justify-between items-center px-5 pt-3 pb-2 shrink-0">
-        <h1 className="font-bold text-xl text-primary tracking-tight">MoneyPal</h1>
-        <button
-          type="button"
-          onClick={() => navigate('/settings')}
-          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
-          aria-label="Settings"
-        >
-          <span className="material-symbols-outlined text-[22px]">settings</span>
-        </button>
-      </header>
+    <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none pb-[72px]">
 
-      {/* Amount Display — compact */}
-      <div className="flex flex-col items-center py-1 shrink-0">
-        <div
-          id="amount-display"
-          className="text-[58px] font-bold text-primary-container tracking-tighter leading-none transition-transform duration-100"
-          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
-        >
-          {formatted}
-        </div>
-      </div>
-
-      {/* Categories — compact */}
-      <div className="px-4 py-1 shrink-0">
-        {categoriesLoading ? (
-          <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-            {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="h-9 w-20 bg-white/40 rounded-full animate-pulse shrink-0" />
-            ))}
-          </div>
-        ) : (
-          <CategoryChips
-            categories={categories}
-            selectedId={selectedCategoryId}
-            onSelect={setSelectedCategoryId}
-          />
-        )}
-      </div>
-
-      {/* Note Input — compact */}
-      <div className="px-4 py-1 shrink-0">
-        <div className="relative w-full">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60 pointer-events-none text-[18px]">
-            edit_note
-          </span>
-          <input
-            type="text"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a note..."
-            className="w-full liquid-glass rounded-xl py-2 pl-9 pr-3 text-on-surface text-[15px] focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-50 transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Numpad + Controls — fills remaining space */}
-      <div className="flex flex-col flex-1 px-4 pb-[78px] gap-2 min-h-0">
-        <div className="liquid-glass rounded-2xl p-3 flex flex-col gap-2 h-full">
-          {/* Numpad grid — grows to fill */}
-          <div className="grid grid-cols-3 gap-2 flex-1">
-            {['1','2','3','4','5','6','7','8','9','.','0','backspace'].map((key) => (
-              <button
-                key={key}
-                type="button"
-                aria-label={key === 'backspace' ? 'Delete' : key}
-                onClick={() => handleKeyPress(key)}
-                className="flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface text-[26px] font-medium transition-all active:scale-95 tap-feedback"
-              >
-                {key === 'backspace' ? (
-                  <span className="material-symbols-outlined text-[24px] font-light">backspace</span>
-                ) : key}
-              </button>
-            ))}
-          </div>
-
-          {/* Payment toggle + Save */}
-          <div className="flex justify-center">
-            <PaymentToggle method={paymentMethod} onChange={handlePaymentMethodChange} />
-          </div>
-
+      {/* ── TOP SECTION (Fixed height items) ─────────────────── */}
+      <div className="flex flex-col w-full shrink-0">
+        {/* Header */}
+        <header className="flex justify-between items-center px-4 pt-1.5 pb-0.5">
+          <h1 className="font-bold text-xl text-primary tracking-tight">MoneyPal</h1>
           <button
             type="button"
-            disabled={!hasAmount || isSaving || selectedCategoryId === null}
-            onClick={handleSave}
-            className={`w-full h-12 rounded-full text-[16px] font-semibold flex items-center justify-center gap-2 transition-all shadow-md tap-feedback ${
-              hasAmount && selectedCategoryId !== null
-                ? saveSuccess
-                  ? 'bg-on-primary-container text-white'
-                  : 'bg-pantone-686 text-white hover:opacity-90 active:scale-95'
-                : 'bg-pantone-686/30 text-white/50 cursor-not-allowed'
-            }`}
+            onClick={() => navigate('/settings')}
+            className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+            aria-label="Settings"
           >
-            <span className="material-symbols-outlined text-[18px]">
-              {saveSuccess ? 'check_circle' : 'check_circle'}
-            </span>
-            {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Transaction'}
+            <span className="material-symbols-outlined text-[22px]">settings</span>
           </button>
+        </header>
+
+        {/* Amount */}
+        <div className="flex flex-col items-center py-0.5">
+          <AmountDisplay amount={amount} currency={settings?.currency || 'INR'} />
+        </div>
+
+        {/* Category Chips */}
+        <div className="px-3 py-0.5">
+          {categoriesLoading ? (
+            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="h-7 w-18 bg-white/40 rounded-full animate-pulse shrink-0" />
+              ))}
+            </div>
+          ) : (
+            <CategoryChips
+              categories={categories}
+              selectedId={selectedCategoryId}
+              onSelect={setSelectedCategoryId}
+            />
+          )}
+        </div>
+
+        {/* Note — compact 2-line input */}
+        <div className="px-3 py-0.5">
+          <div className="relative w-full">
+            <span className="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant opacity-50 pointer-events-none text-[15px]">
+              edit_note
+            </span>
+            <textarea
+              rows={2}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Add a note…"
+              className="w-full liquid-glass rounded-xl py-1 pl-7 pr-2.5 text-on-surface text-[12px] focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-40 resize-none leading-tight"
+            />
+          </div>
         </div>
       </div>
+
+      {/* ── MIDDLE SECTION (Numpad Card — expands to fill remaining space) ── */}
+      <div className="flex-1 min-h-0 px-3 py-1">
+        <div className="liquid-glass rounded-2xl p-2 h-full shadow-lg border border-white/80 flex flex-col">
+          <Numpad onKeyPress={handleKeyPress} />
+        </div>
+      </div>
+
+      {/* ── BOTTOM SECTION (Payment Toggle + Save Button) ────── */}
+      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-0.5 pb-1">
+        {/* Cash | UPI Toggle */}
+        <div className="flex justify-center">
+          <PaymentToggle method={paymentMethod} onChange={handlePaymentMethodChange} />
+        </div>
+
+        {/* Save Transaction Button */}
+        <button
+          type="button"
+          disabled={!hasAmount || isSaving || selectedCategoryId === null}
+          onClick={handleSave}
+          className={`w-full h-11 rounded-full text-[14px] font-extrabold flex items-center justify-center gap-2 transition-all shadow-md tap-feedback ${
+            hasAmount && selectedCategoryId !== null
+              ? saveSuccess
+                ? 'bg-on-primary-container text-white'
+                : 'bg-pantone-686 text-white hover:opacity-90 active:scale-95'
+              : 'bg-pantone-686/30 text-white/50 cursor-not-allowed'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[17px]">check_circle</span>
+          {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Transaction'}
+        </button>
+      </div>
+
     </div>
   );
 };

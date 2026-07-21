@@ -9,30 +9,33 @@ from datetime import datetime
 from typing import Optional
 
 from app.db import get_db
-from app.models import Expense
-from app.deps import verify_api_key
+from app.models import Expense, User
+from app.deps import get_current_user
 
 router = APIRouter(
     prefix="/export",
     tags=["export"],
-    dependencies=[Depends(verify_api_key)]
 )
 
 @router.get("/csv")
 async def export_csv(
     start: Optional[datetime] = None,
     end: Optional[datetime] = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
-    query = select(Expense).options(joinedload(Expense.category))
-    filters = []
+    filters = [Expense.user_id == current_user.id]
     if start:
         filters.append(Expense.occurred_at >= start)
     if end:
         filters.append(Expense.occurred_at <= end)
-    if filters:
-        query = query.filter(and_(*filters))
-    query = query.order_by(Expense.occurred_at.asc())
+
+    query = (
+        select(Expense)
+        .options(joinedload(Expense.category))
+        .filter(and_(*filters))
+        .order_by(Expense.occurred_at.asc())
+    )
 
     result = await db.execute(query)
     expenses = result.scalars().all()
@@ -40,8 +43,6 @@ async def export_csv(
     def generate():
         output = io.StringIO()
         writer = csv.writer(output)
-
-        # Write header
         writer.writerow(["date", "time", "category", "amount", "payment_method", "note"])
         yield output.getvalue()
         output.seek(0)
@@ -51,14 +52,7 @@ async def export_csv(
             date_str = exp.occurred_at.strftime("%Y-%m-%d")
             time_str = exp.occurred_at.strftime("%H:%M:%S")
             cat_name = exp.category.name if exp.category else "Uncategorized"
-            writer.writerow([
-                date_str,
-                time_str,
-                cat_name,
-                str(exp.amount),
-                exp.payment_method,
-                exp.note or ""
-            ])
+            writer.writerow([date_str, time_str, cat_name, str(exp.amount), exp.payment_method, exp.note or ""])
             yield output.getvalue()
             output.seek(0)
             output.truncate(0)
