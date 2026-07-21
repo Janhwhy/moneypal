@@ -1,0 +1,28 @@
+# Master Prompt Document
+tappy-budget-tracker-master-prompt.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+.env.*
+!.env.example
+
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+.eslintcache
+
+# Databases & local configs
+*.db
+*.sqlite
+.idea/
+.vscode/
+.DS_Store
