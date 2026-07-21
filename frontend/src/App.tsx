@@ -21,7 +21,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-accent-teal/35">
+        <div className="min-h-screen bg-background text-on-background font-sans selection:bg-pantone-686/30">
           <Routes>
             <Route path="/" element={<TapPage />} />
             <Route path="/history" element={<HistoryPage />} />

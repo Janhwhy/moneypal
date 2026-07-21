@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analytics - Serene Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "inverse-primary": "#a6d0b9",
+                "surface-container": "#f2efd0",
+                "surface": "#fefbdb",
+                "primary-container": "#0a3323",
+                "surface-container-high": "#ece9cb",
+                "primary-fixed-dim": "#a6d0b9",
+                "tertiary": "#101b00",
+                "tertiary-fixed": "#d3eca2",
+                "on-secondary": "#ffffff",
+                "outline": "#717973",
+                "surface-tint": "#406653",
+                "on-primary-fixed-variant": "#284e3c",
+                "surface-container-lowest": "#ffffff",
+                "secondary-fixed-dim": "#eab9d2",
+                "on-tertiary": "#ffffff",
+                "tertiary-container": "#213100",
+                "on-secondary-container": "#7a5369",
+                "surface-bright": "#fefbdb",
+                "secondary-fixed": "#ffd8eb",
+                "secondary-container": "#fecce6",
+                "outline-variant": "#c1c8c2",
+                "on-error": "#ffffff",
+                "background": "#fefbdb",
+                "tertiary-fixed-dim": "#b8cf88",
+                "on-primary": "#ffffff",
+                "error": "#ba1a1a",
+                "secondary": "#7a5369",
+                "primary": "#001d11",
+                "on-error-container": "#93000a",
+                "on-surface-variant": "#414844",
+                "on-primary-fixed": "#002114",
+                "surface-container-low": "#f8f5d6",
+                "on-surface": "#1d1c0a",
+                "on-secondary-fixed": "#2f1124",
+                "error-container": "#ffdad6",
+                "surface-variant": "#e7e4c5",
+                "on-tertiary-fixed-variant": "#3a4d15",
+                "on-tertiary-fixed": "#141f00",
+                "on-tertiary-container": "#859b5a",
+                "surface-container-highest": "#e7e4c5",
+                "on-primary-container": "#749d87",
+                "surface-dim": "#dedbbd",
+                "on-secondary-fixed-variant": "#603b51",
+                "on-background": "#1d1c0a",
+                "primary-fixed": "#c2ecd4",
+                "inverse-surface": "#32311d",
+                "inverse-on-surface": "#f5f2d3"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "xl": "80px",
+                "sm": "12px",
+                "gutter": "20px",
+                "container-max": "1200px",
+                "md": "24px",
+                "lg": "48px",
+                "base": "8px",
+                "xs": "4px"
+        },
+        "fontFamily": {
+                "headline-md": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Display",
+                        "system-ui",
+                        "sans-serif"
+                ],
+                "label-md": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Text",
+                        "system-ui",
+                        "sans-serif"
+                ],
+                "display-lg-mobile": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Display",
+                        "system-ui",
+                        "sans-serif"
+                ],
+                "display-lg": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Display",
+                        "system-ui",
+                        "sans-serif"
+                ],
+                "body-lg": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Text",
+                        "system-ui",
+                        "sans-serif"
+                ],
+                "body-sm": [
+                        "-apple-system",
+                        "BlinkMacSystemFont",
+                        "SF Pro Text",
+                        "system-ui",
+                        "sans-serif"
+                ]
+        },
+        "fontSize": {
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "36px",
+                        {
+                                "lineHeight": "44px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "17px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-sm": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0em",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+            min-height: max(884px, 100dvh);
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(10, 51, 35, 0.1);
+        }
+        .dark .liquid-glass {
+            background: rgba(20, 31, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .bar-bg-glass {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.05);
+        }
+        .dark .bar-bg-glass {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .bar-fill-glass-1 {
+            background: linear-gradient(90deg, #859b5a 0%, #a6d0b9 100%);
+            box-shadow: 0 2px 10px rgba(133, 155, 90, 0.4);
+        }
+        .bar-fill-glass-2 {
+            background: linear-gradient(90deg, #D0A1BA 0%, #eab9d2 100%);
+            box-shadow: 0 2px 10px rgba(208, 161, 186, 0.4);
+        }
+        .bar-fill-glass-3 {
+            background: linear-gradient(90deg, #406653 0%, #749d87 100%);
+            box-shadow: 0 2px 10px rgba(64, 102, 83, 0.4);
+        }
+        .bar-fill-glass-4 {
+            background: linear-gradient(90deg, #7a5369 0%, #ffd8eb 100%);
+            box-shadow: 0 2px 10px rgba(122, 83, 105, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="bg-surface/40 dark:bg-surface-dim/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 border-b border-on-primary-container/10 shadow-sm">
+<button class="text-on-surface-variant dark:text-outline hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim tracking-tight">Serene Ledger</h1>
+<button class="text-on-surface-variant dark:text-outline hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col px-gutter py-xl mt-16 mb-24 max-w-md mx-auto w-full">
+<!-- Month Selector -->
+<div class="flex justify-between items-center mb-lg">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-center text-primary">July 2024</h2>
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<!-- Total Spent Summary Card -->
+<div class="liquid-glass rounded-3xl p-lg mb-xl flex flex-col items-center justify-center relative overflow-hidden">
+<!-- Soft decorative glow -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-40 rounded-full blur-2xl -mr-16 -mt-16"></div>
+<div class="absolute bottom-0 left-0 w-32 h-32 bg-secondary-fixed opacity-30 rounded-full blur-2xl -ml-16 -mb-16"></div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase mb-xs tracking-wider">Total Spent</p>
+<p class="font-display-lg text-display-lg text-primary-container">₹3,450.00</p>
+</div>
+<!-- Category Breakdown -->
+<div class="flex flex-col gap-md mb-xl">
+<h3 class="font-headline-md text-headline-md text-primary mb-sm">Breakdown</h3>
+<!-- Category Item: Food -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-end">
+<span class="font-body-lg text-body-lg font-medium text-on-background">Food</span>
+<span class="font-label-md text-label-md text-on-surface-variant">40%</span>
+</div>
+<div class="h-4 w-full bar-bg-glass rounded-full overflow-hidden p-[2px]">
+<div class="h-full bar-fill-glass-1 rounded-full" style="width: 40%;"></div>
+</div>
+</div>
+<!-- Category Item: Housing -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-end">
+<span class="font-body-lg text-body-lg font-medium text-on-background">Housing</span>
+<span class="font-label-md text-label-md text-on-surface-variant">35%</span>
+</div>
+<div class="h-4 w-full bar-bg-glass rounded-full overflow-hidden p-[2px]">
+<div class="h-full bar-fill-glass-2 rounded-full" style="width: 35%;"></div>
+</div>
+</div>
+<!-- Category Item: Transport -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-end">
+<span class="font-body-lg text-body-lg font-medium text-on-background">Transport</span>
+<span class="font-label-md text-label-md text-on-surface-variant">15%</span>
+</div>
+<div class="h-4 w-full bar-bg-glass rounded-full overflow-hidden p-[2px]">
+<div class="h-full bar-fill-glass-3 rounded-full" style="width: 15%;"></div>
+</div>
+</div>
+<!-- Category Item: Entertainment -->
+<div class="flex flex-col gap-xs">
+<div class="flex justify-between items-end">
+<span class="font-body-lg text-body-lg font-medium text-on-background">Entertainment</span>
+<span class="font-label-md text-label-md text-on-surface-variant">10%</span>
+</div>
+<div class="h-4 w-full bar-bg-glass rounded-full overflow-hidden p-[2px]">
+<div class="h-full bar-fill-glass-4 rounded-full" style="width: 10%;"></div>
+</div>
+</div>
+</div>
+<!-- Detailed Report Link -->
+<div class="flex justify-center">
+<a class="font-label-md text-label-md text-primary-container hover:opacity-80 transition-opacity underline decoration-1 underline-offset-4" href="#">View Detailed Report</a>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="liquid-glass rounded-t-3xl border-t border-on-primary-container/10 shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-1.5 hover:bg-on-surface/5 dark:hover:bg-on-surface-variant/5 rounded-full active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-3xl">history</span>
+</button>
+<!-- Add Action -->
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim px-4 py-1.5 hover:bg-on-surface/5 dark:hover:bg-on-surface-variant/5 rounded-full active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+</button>
+<!-- Active State -->
+<button class="flex flex-col items-center justify-center bg-secondary-container/40 dark:bg-secondary-container/30 text-on-secondary-container dark:text-secondary-fixed-dim rounded-full px-5 py-2 backdrop-blur-md border border-secondary-container/50 shadow-inner active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">equalizer</span>
+</button>
+</nav>
+</body></html>

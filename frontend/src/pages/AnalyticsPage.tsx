@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useAnalytics, useMonthlySpend } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
 import { CategoryProgressBar } from '../components/CategoryProgressBar';
-import { TrendingUp, DollarSign, Calendar, BarChart2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
+
+const CURRENCY_GLYPH: Record<string, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
 export const AnalyticsPage: React.FC = () => {
   const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
@@ -11,21 +12,29 @@ export const AnalyticsPage: React.FC = () => {
   const { monthlySpend, isLoading: isMonthlyLoading } = useMonthlySpend(new Date().getFullYear());
   const { settings } = useSettings();
 
-  const currencyGlyph = settings?.currency === 'INR' ? '₹' : settings?.currency || '₹';
+  const currencyGlyph = CURRENCY_GLYPH[settings?.currency ?? 'INR'] ?? '₹';
+  const monthlyBudget = settings?.monthly_budget ?? 0;
+  const spent = Number(summary?.spent ?? 0);
+  const isOverBudget = period === 'month' && monthlyBudget > 0 && spent > monthlyBudget;
+
   const periods: ('week' | 'month' | 'year')[] = ['week', 'month', 'year'];
 
-  // Formatting chart data
+  const [viewMonth, setViewMonth] = useState(new Date());
+  const monthLabel = viewMonth.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+  const prevMonth = () => setViewMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const nextMonth = () => setViewMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+
   const chartData = monthlySpend.map((item) => ({
     name: item.month,
     amount: Number(item.amount),
   }));
 
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
+    if (active && payload?.length) {
       return (
-        <div className="bg-zinc-900 border border-zinc-800 p-2.5 rounded-xl shadow-2xl">
-          <p className="text-xs font-bold text-zinc-400">{payload[0].name}</p>
-          <p className="text-sm font-black text-accent-teal mt-0.5">
+        <div className="liquid-glass rounded-xl p-2 shadow-2xl">
+          <p className="text-[11px] text-on-surface-variant">{payload[0].name}</p>
+          <p className="text-[14px] font-bold text-primary-container mt-0.5">
             {currencyGlyph}{payload[0].value.toFixed(2)}
           </p>
         </div>
@@ -35,143 +44,147 @@ export const AnalyticsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 safe-pt max-w-md mx-auto relative px-4">
-      {/* Top Header */}
-      <div className="flex justify-between items-center py-4">
-        <h1 className="text-2xl font-black tracking-tight text-white select-none">Analytics</h1>
-      </div>
+    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+      {/* Header */}
+      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm max-w-md">
+        <button type="button" className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+          <span className="material-symbols-outlined text-[22px]">menu</span>
+        </button>
+        <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
+        <button type="button" className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+          <span className="material-symbols-outlined text-[22px]">account_circle</span>
+        </button>
+      </header>
 
-      {/* Segmented Filter */}
-      <div className="flex bg-surface p-1 rounded-full w-full mb-6 select-none">
-        {periods.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => setPeriod(p)}
-            className={`flex-1 text-center py-2 text-xs font-bold rounded-full transition-all capitalize tap-feedback ${
-              period === p
-                ? 'bg-zinc-800 text-white shadow'
-                : 'text-zinc-500'
-            }`}
-          >
-            {p}
+      <main className="flex-grow flex flex-col px-4 pt-[64px] pb-[100px] w-full">
+
+        {/* Month Navigator */}
+        <div className="flex justify-between items-center mt-4 mb-3">
+          <button type="button" onClick={prevMonth} className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+            <span className="material-symbols-outlined">chevron_left</span>
           </button>
-        ))}
-      </div>
+          <h2 className="font-bold text-[17px] text-primary">{monthLabel}</h2>
+          <button type="button" onClick={nextMonth} className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
 
-      {/* Analytics Content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10 space-y-6">
-        {isSummaryLoading ? (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="h-24 bg-surface rounded-3xl animate-pulse"></div>
-            <div className="h-24 bg-surface rounded-3xl animate-pulse"></div>
+        {/* Period Selector */}
+        <div className="flex liquid-glass rounded-full p-[3px] gap-[2px] mb-4">
+          {periods.map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPeriod(p)}
+              className={`flex-1 text-center py-1.5 text-[12px] font-semibold rounded-full transition-all capitalize tap-feedback ${
+                period === p
+                  ? 'bg-pantone-686/50 text-primary shadow border border-pantone-686/30'
+                  : 'text-on-surface-variant hover:bg-white/30'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        {/* Over-budget alert banner */}
+        {isOverBudget && (
+          <div className="flex items-center gap-2 bg-error/10 border border-error/30 text-error rounded-xl px-4 py-2.5 text-[13px] font-semibold mb-4">
+            <span className="material-symbols-outlined text-[18px]">warning</span>
+            Over budget! You&apos;ve exceeded your {currencyGlyph}{monthlyBudget.toLocaleString('en-IN')} limit by {currencyGlyph}{(spent - monthlyBudget).toLocaleString('en-IN', { maximumFractionDigits: 0 })}.
           </div>
+        )}
+
+        {/* Summary Card */}
+        {isSummaryLoading ? (
+          <div className="liquid-glass rounded-2xl h-24 animate-pulse mb-4" />
         ) : summary ? (
-          <>
-            {/* Stat Cards Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Card 1: Spent */}
-              <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl select-none">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-black text-zinc-500 uppercase tracking-wider">Spent</span>
-                  <DollarSign className="w-4 h-4 text-zinc-500" />
-                </div>
-                <div className="text-xl font-extrabold text-white">
-                  {currencyGlyph}{Number(summary.spent).toFixed(2)}
-                </div>
-                <div className="text-[10px] font-bold text-zinc-500 mt-1 capitalize">
-                  This {period}
-                </div>
-              </div>
-
-              {/* Card 2: Budget Left */}
-              <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl select-none">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs font-black text-zinc-500 uppercase tracking-wider">Budget Left</span>
-                  <Calendar className="w-4 h-4 text-zinc-500" />
-                </div>
-                <div className={`text-xl font-extrabold ${Number(summary.budget_left) < 0 ? 'text-accent-red' : 'text-white'}`}>
-                  {currencyGlyph}{Number(summary.budget_left).toFixed(2)}
-                </div>
-                <div className="text-[10px] font-bold text-zinc-500 mt-1">
-                  Monthly limit
-                </div>
-              </div>
-            </div>
-
-            {/* Pacing Info Box */}
-            <div className="bg-surface/30 border border-zinc-900 p-4 rounded-3xl select-none flex items-center gap-3">
-              <div className="p-3 bg-accent-teal/10 rounded-2xl shrink-0">
-                <TrendingUp className="w-5 h-5 text-accent-teal" />
-              </div>
-              <div>
-                <div className="text-sm font-black text-white">
-                  On pace for <span className="text-accent-teal">{currencyGlyph}{Number(summary.pace_projection).toFixed(0)}</span>
-                </div>
-                <div className="text-xs font-bold text-zinc-500 mt-0.5">
-                  {currencyGlyph}{Number(summary.daily_average).toFixed(2)} / day average
-                </div>
-              </div>
-            </div>
-          </>
+          <div className={`rounded-2xl p-4 mb-4 flex flex-col items-center justify-center relative overflow-hidden ${
+            isOverBudget
+              ? 'bg-error/10 border border-error/30'
+              : 'liquid-glass'
+          }`}>
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-30 rounded-full blur-2xl -mr-12 -mt-12" />
+            <p className="text-[11px] font-semibold text-on-surface-variant uppercase mb-1 tracking-wider z-10">
+              Total Spent
+            </p>
+            <p className={`text-[40px] font-bold z-10 leading-none ${isOverBudget ? 'text-error' : 'text-primary-container'}`}>
+              {currencyGlyph}{Number(summary.spent).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </p>
+            {monthlyBudget > 0 && (
+              <p className={`text-[12px] mt-1 z-10 ${isOverBudget ? 'text-error font-semibold' : 'text-on-surface-variant'}`}>
+                Budget: {currencyGlyph}{monthlyBudget.toLocaleString('en-IN')}
+              </p>
+            )}
+          </div>
         ) : null}
 
-        {/* Year Chart Section */}
+        {/* Stat Cards */}
+        {summary && (
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className={`rounded-2xl p-3 flex flex-col ${
+              Number(summary.budget_left) < 0
+                ? 'bg-error/10 border border-error/30'
+                : 'liquid-glass'
+            }`}>
+              <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Budget Left</span>
+              <span className={`text-[28px] font-bold leading-tight ${Number(summary.budget_left) < 0 ? 'text-error' : 'text-primary-container'}`}>
+                {currencyGlyph}{Math.abs(Number(summary.budget_left)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </span>
+              {Number(summary.budget_left) < 0 && (
+                <span className="text-[11px] text-error mt-0.5 font-medium">Over budget!</span>
+              )}
+            </div>
+
+            <div className="liquid-glass rounded-2xl p-3 flex flex-col">
+              <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Daily Avg</span>
+              <span className="text-[28px] font-bold text-primary-container leading-tight">
+                {currencyGlyph}{Number(summary.daily_average).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </span>
+              <span className="text-[11px] text-on-surface-variant mt-0.5">
+                Pace: {currencyGlyph}{Number(summary.pace_projection).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Category Breakdown */}
+        <div className="flex flex-col gap-2 mb-4">
+          <h3 className="font-bold text-[16px] text-primary">Breakdown</h3>
+          {categorySpend.length === 0 ? (
+            <div className="text-center py-4 text-[14px] text-on-surface-variant opacity-60">
+              No data for this period
+            </div>
+          ) : (
+            categorySpend.map((item, idx) => (
+              <CategoryProgressBar key={item.category_id} item={item} currency={settings?.currency ?? 'INR'} index={idx} />
+            ))
+          )}
+        </div>
+
+        {/* Monthly Bar Chart (year view) */}
         {period === 'year' && (
-          <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl">
-            <div className="flex items-center gap-2 mb-4 select-none">
-              <BarChart2 className="w-4 h-4 text-zinc-400" />
-              <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">Monthly Breakdown</span>
+          <div className="liquid-glass rounded-2xl p-3 mb-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-on-surface-variant text-[18px]">bar_chart</span>
+              <span className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Monthly Breakdown</span>
             </div>
             {isMonthlyLoading ? (
-              <div className="h-40 bg-zinc-900 rounded-2xl animate-pulse"></div>
+              <div className="h-36 bg-white/20 rounded-xl animate-pulse" />
             ) : (
-              <div className="h-40 w-full">
+              <div className="h-36 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="#52525b" 
-                      fontSize={10} 
-                      tickLine={false} 
-                      axisLine={false} 
-                    />
-                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
-                    <Bar 
-                      dataKey="amount" 
-                      fill="#5AC8C8" 
-                      radius={[4, 4, 0, 0]} 
-                    />
+                  <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 4 }}>
+                    <XAxis dataKey="name" stroke="#717973" fontSize={9} tickLine={false} axisLine={false} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(64,102,83,0.08)' }} />
+                    <Bar dataKey="amount" fill="#749d87" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
           </div>
         )}
-
-        {/* Category Breakdown Progress Bars */}
-        <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl">
-          <div className="flex justify-between items-center mb-3 select-none">
-            <span className="text-xs font-black text-zinc-400 uppercase tracking-wider">By Category</span>
-          </div>
-
-          <div className="divide-y divide-zinc-900">
-            {categorySpend.length === 0 ? (
-              <div className="text-center py-6 text-xs text-zinc-500 font-bold select-none">
-                No categorical data recorded for this period
-              </div>
-            ) : (
-              categorySpend.map((item) => (
-                <CategoryProgressBar
-                  key={item.category_id}
-                  item={item}
-                  currency={settings?.currency || 'INR'}
-                />
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };

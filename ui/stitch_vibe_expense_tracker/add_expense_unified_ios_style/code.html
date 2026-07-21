@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Expense - Serene Ledger</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "inverse-primary": "#a6d0b9",
+                "surface-container": "#f2efd0",
+                "surface": "#fefbdb",
+                "primary-container": "#0a3323",
+                "surface-container-high": "#ece9cb",
+                "primary-fixed-dim": "#a6d0b9",
+                "tertiary": "#101b00",
+                "tertiary-fixed": "#d3eca2",
+                "on-secondary": "#ffffff",
+                "outline": "#717973",
+                "surface-tint": "#406653",
+                "on-primary-fixed-variant": "#284e3c",
+                "surface-container-lowest": "#ffffff",
+                "secondary-fixed-dim": "#eab9d2",
+                "on-tertiary": "#ffffff",
+                "tertiary-container": "#213100",
+                "on-secondary-container": "#7a5369",
+                "surface-bright": "#fefbdb",
+                "secondary-fixed": "#ffd8eb",
+                "secondary-container": "#fecce6",
+                "outline-variant": "#c1c8c2",
+                "on-error": "#ffffff",
+                "background": "#fefbdb",
+                "tertiary-fixed-dim": "#b8cf88",
+                "on-primary": "#ffffff",
+                "error": "#ba1a1a",
+                "secondary": "#7a5369",
+                "primary": "#001d11",
+                "on-error-container": "#93000a",
+                "on-surface-variant": "#414844",
+                "on-primary-fixed": "#002114",
+                "surface-container-low": "#f8f5d6",
+                "on-surface": "#1d1c0a",
+                "on-secondary-fixed": "#2f1124",
+                "error-container": "#ffdad6",
+                "surface-variant": "#e7e4c5",
+                "on-tertiary-fixed-variant": "#3a4d15",
+                "on-tertiary-fixed": "#141f00",
+                "on-tertiary-container": "#859b5a",
+                "surface-container-highest": "#e7e4c5",
+                "on-primary-container": "#749d87",
+                "surface-dim": "#dedbbd",
+                "on-secondary-fixed-variant": "#603b51",
+                "on-background": "#1d1c0a",
+                "primary-fixed": "#c2ecd4",
+                "inverse-surface": "#32311d",
+                "inverse-on-surface": "#f5f2d3",
+                "pantone-686": "#D0A1BA"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "xl": "80px",
+                "sm": "12px",
+                "gutter": "20px",
+                "container-max": "1200px",
+                "md": "24px",
+                "lg": "48px",
+                "base": "8px",
+                "xs": "4px"
+        },
+        "fontFamily": {
+                "headline-md": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"
+                ],
+                "display-lg": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"
+                ],
+                "body-lg": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"
+                ],
+                "label-md": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"
+                ],
+                "display-lg-mobile": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Display", "system-ui", "sans-serif"
+                ],
+                "body-sm": [
+                        "-apple-system", "BlinkMacSystemFont", "SF Pro Text", "system-ui", "sans-serif"
+                ]
+        },
+        "fontSize": {
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "36px",
+                        {
+                                "lineHeight": "44px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "body-lg": [
+                        "17px",
+                        {
+                                "lineHeight": "24px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "400"
+                        }
+                ],
+                "body-sm": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "letterSpacing": "0em",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        /* Custom scrollbar hiding for horizontal list */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+            min-height: max(884px, 100dvh);
+            background: linear-gradient(135deg, #fefbdb 0%, #f8f5d6 100%);
+        }
+        .liquid-glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(10, 51, 35, 0.1);
+        }
+        .dark .liquid-glass {
+            background: rgba(20, 31, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="text-on-background bg-background h-screen flex flex-col antialiased overflow-hidden relative">
+<!-- TopAppBar -->
+<header class="bg-surface/40 dark:bg-surface-dim/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 border-b border-on-primary-container/10 shadow-sm">
+<button aria-label="Close" class="text-on-surface-variant dark:text-outline hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim tracking-tight">Add Expense</h1>
+<div class="w-6 h-6"></div> <!-- Spacer -->
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col px-gutter pb-[120px] pt-[80px] max-w-md mx-auto w-full h-full justify-between overflow-y-auto no-scrollbar">
+<!-- Display Area -->
+<section class="flex flex-col items-center justify-center mt-md mb-lg">
+<div class="text-on-surface-variant font-label-md text-label-md mb-base uppercase tracking-widest opacity-80">
+                Today, 10:45 AM
+            </div>
+<div class="font-display-lg text-[72px] font-bold text-primary-container tracking-tighter" id="amount-display">
+                ₹0.00
+            </div>
+</section>
+<!-- Categories -->
+<section class="mb-lg w-full">
+<div class="flex overflow-x-auto no-scrollbar gap-base pb-base px-xs" style="scroll-snap-type: x mandatory;">
+<!-- Category Chip (Active) -->
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-pantone-686/40 backdrop-blur-xl border border-pantone-686/60 text-primary shadow-sm transition-colors" style="scroll-snap-align: start;">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+<span class="font-body-lg text-body-lg font-medium whitespace-nowrap">Food</span>
+</button>
+<!-- Category Chip (Inactive) -->
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-white/40 backdrop-blur-xl border border-white/60 text-on-surface hover:bg-white/60 transition-colors" style="scroll-snap-align: start;">
+<span class="material-symbols-outlined text-[20px]">directions_bus</span>
+<span class="font-body-lg text-body-lg font-medium whitespace-nowrap">Transport</span>
+</button>
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-white/40 backdrop-blur-xl border border-white/60 text-on-surface hover:bg-white/60 transition-colors" style="scroll-snap-align: start;">
+<span class="material-symbols-outlined text-[20px]">shopping_bag</span>
+<span class="font-body-lg text-body-lg font-medium whitespace-nowrap">Shopping</span>
+</button>
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-white/40 backdrop-blur-xl border border-white/60 text-on-surface hover:bg-white/60 transition-colors" style="scroll-snap-align: start;">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+<span class="font-body-lg text-body-lg font-medium whitespace-nowrap">Bills</span>
+</button>
+<button class="flex items-center gap-xs px-md py-sm rounded-full bg-white/40 backdrop-blur-xl border border-white/60 text-on-surface hover:bg-white/60 transition-colors" style="scroll-snap-align: start;">
+<span class="material-symbols-outlined text-[20px]">local_cafe</span>
+<span class="font-body-lg text-body-lg font-medium whitespace-nowrap">Coffee</span>
+</button>
+</div>
+</section>
+<!-- Note Input -->
+<section class="mb-md w-full px-xs">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60 pointer-events-none pl-sm">edit_note</span>
+<input class="w-full liquid-glass rounded-2xl py-sm pl-[44px] pr-sm text-on-surface font-body-lg text-body-lg focus:ring-0 focus:border-pantone-686 focus:bg-white/70 transition-all placeholder:text-on-surface-variant placeholder:opacity-50" placeholder="Add Note..." type="text"/>
+</div>
+</section>
+<!-- Keypad & Action -->
+<section class="flex flex-col gap-sm w-full pb-md liquid-glass mt-auto rounded-3xl p-md relative z-10">
+<div class="grid grid-cols-3 gap-base">
+<!-- Row 1 -->
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">1</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">2</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">3</button>
+<!-- Row 2 -->
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">4</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">5</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">6</button>
+<!-- Row 3 -->
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">7</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">8</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">9</button>
+<!-- Row 4 -->
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">.</button>
+<button class="keypad-btn flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface font-display-lg-mobile text-[28px] font-medium transition-all active:scale-95">0</button>
+<button aria-label="Delete" class="keypad-btn-del flex items-center justify-center h-[64px] rounded-2xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface transition-all active:scale-95">
+<span class="material-symbols-outlined text-[28px] font-light">backspace</span>
+</button>
+</div>
+<button class="w-full h-[56px] rounded-full bg-pantone-686 text-white font-headline-md text-[18px] flex items-center justify-center gap-sm mt-sm hover:opacity-90 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined">check_circle</span>
+                Save Transaction
+            </button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="liquid-glass rounded-t-3xl border-t border-on-primary-container/10 shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-1.5 hover:bg-on-surface/5 dark:hover:bg-on-surface-variant/5 rounded-full active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-3xl">history</span>
+</button>
+<!-- Add Action -->
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim px-4 py-1.5 hover:bg-on-surface/5 dark:hover:bg-on-surface-variant/5 rounded-full active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+</button>
+<!-- Active State (Analytics) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-1.5 hover:bg-on-surface/5 dark:hover:bg-on-surface-variant/5 rounded-full active:scale-90 transition-all duration-300 ease-out">
+<span class="material-symbols-outlined text-3xl">equalizer</span>
+</button>
+</nav>
+<script>
+        // Micro-interaction logic for keypad
+        document.addEventListener('DOMContentLoaded', () => {
+            const display = document.getElementById('amount-display');
+            let currentVal = '0.00';
+            let isFirstEntry = true;
+
+            const formatCurrency = (val) => {
+                if (val === '') return '₹0.00';
+                const num = parseFloat(val);
+                if (isNaN(num)) return '₹0.00';
+                return '₹' + num.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            };
+
+            const updateDisplay = () => {
+                // simple visual update for demonstration
+                // In a real app, this would handle complex decimal logic
+                display.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    display.style.transform = 'scale(1)';
+                }, 100);
+            };
+
+            const numBtns = document.querySelectorAll('.keypad-btn');
+            numBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const digit = e.target.textContent;
+                    if (isFirstEntry) {
+                        currentVal = digit;
+                        isFirstEntry = false;
+                    } else {
+                        // Very naive formatting for visual effect only
+                        if(currentVal.replace('.','').length < 8) {
+                             currentVal += digit;
+                        }
+                    }
+                    display.textContent = formatCurrency(currentVal);
+                    updateDisplay();
+                });
+            });
+
+            const delBtn = document.querySelector('.keypad-btn-del');
+            if(delBtn) {
+                 delBtn.addEventListener('click', () => {
+                     if (currentVal.length > 1) {
+                         currentVal = currentVal.slice(0, -1);
+                     } else {
+                         currentVal = '0';
+                         isFirstEntry = true;
+                     }
+                     display.textContent = formatCurrency(currentVal);
+                     updateDisplay();
+                 });
+            }
+        });
+    </script>
+</body></html>

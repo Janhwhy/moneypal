@@ -5,17 +5,28 @@ interface AmountDisplayProps {
   currency: string;
 }
 
+const CURRENCY_GLYPH: Record<string, string> = {
+  INR: '₹',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+};
+
 export const AmountDisplay: React.FC<AmountDisplayProps> = ({ amount, currency }) => {
-  const formatted = amount === '' ? '0' : amount;
-  const currencyGlyph = currency === 'INR' ? '₹' : currency;
+  const glyph = CURRENCY_GLYPH[currency] ?? currency;
+  const numVal = parseFloat(amount);
+  const formatted = isNaN(numVal) || numVal === 0
+    ? `${glyph}0.00`
+    : `${glyph}${numVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="flex flex-col items-center justify-center py-6 select-none">
-      <div className="flex items-baseline text-white font-extrabold">
-        <span className="text-4xl mr-1 text-zinc-500 font-semibold">{currencyGlyph}</span>
-        <span className="text-7xl tracking-tight tabular-nums break-all max-w-[90vw] text-center select-all">
-          {formatted}
-        </span>
+    <div className="flex flex-col items-center justify-center mt-md mb-lg">
+      <div
+        id="amount-display"
+        className="font-display-lg text-[72px] font-bold text-primary-container tracking-tighter transition-transform duration-100"
+        style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+      >
+        {formatted}
       </div>
     </div>
   );

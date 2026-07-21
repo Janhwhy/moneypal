@@ -7,29 +7,24 @@ interface PaymentToggleProps {
 
 export const PaymentToggle: React.FC<PaymentToggleProps> = ({ method, onChange }) => {
   return (
-    <div className="flex bg-surface p-1 rounded-full w-40 select-none">
-      <button
-        type="button"
-        onClick={() => onChange('cash')}
-        className={`flex-1 text-center py-1 text-xs font-bold rounded-full transition-all tap-feedback ${
-          method === 'cash'
-            ? 'bg-zinc-800 text-white shadow'
-            : 'text-zinc-500'
-        }`}
-      >
-        Cash
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange('credit')}
-        className={`flex-1 text-center py-1 text-xs font-bold rounded-full transition-all tap-feedback ${
-          method === 'credit'
-            ? 'bg-zinc-800 text-white shadow'
-            : 'text-zinc-500'
-        }`}
-      >
-        Credit
-      </button>
+    <div className="flex liquid-glass rounded-full p-[3px] gap-[2px]">
+      {(['cash', 'credit'] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          onClick={() => onChange(m)}
+          className={`flex items-center gap-xs px-md py-sm rounded-full font-label-md text-label-md capitalize transition-all duration-200 tap-feedback ${
+            method === m
+              ? 'bg-pantone-686/60 text-primary shadow-sm border border-pantone-686/40'
+              : 'text-on-surface-variant hover:bg-white/30'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            {m === 'cash' ? 'payments' : 'credit_card'}
+          </span>
+          {m}
+        </button>
+      ))}
     </div>
   );
 };

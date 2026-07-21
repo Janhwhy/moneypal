@@ -1,38 +1,43 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { PlusCircle, History, BarChart3 } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+
+const NAV_ITEMS = [
+  { to: '/history', icon: 'history', label: 'History' },
+  { to: '/',        icon: 'add_circle', label: 'Add', isFill: true, isCenter: true },
+  { to: '/analytics', icon: 'equalizer', label: 'Analytics' },
+];
 
 export const BottomNav: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
 
-  const tabs = [
-    { path: '/history', label: 'History', icon: History },
-    { path: '/', label: 'Tap', icon: PlusCircle },
-    { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-  ];
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-lg border-t border-zinc-900 safe-pb z-40 select-none">
-      <div className="flex justify-around items-center h-16 max-w-md mx-auto">
-        {tabs.map((tab) => {
-          const isActive = location.pathname === tab.path;
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.path}
-              type="button"
-              onClick={() => navigate(tab.path)}
-              className={`flex flex-col items-center justify-center w-20 h-full gap-1 transition-colors tap-feedback ${
-                isActive ? 'text-accent-teal' : 'text-zinc-500'
-              }`}
+    <nav className="liquid-glass rounded-t-3xl border-t border-on-primary-container/10 shadow-lg fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4">
+      {NAV_ITEMS.map((item) => {
+        const isActive =
+          item.to === '/'
+            ? location.pathname === '/'
+            : location.pathname.startsWith(item.to);
+
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            aria-label={item.label}
+            className={`flex flex-col items-center justify-center rounded-full transition-all duration-300 ease-out active:scale-90 ${
+              isActive
+                ? 'bg-secondary-container/40 text-on-secondary-container px-5 py-2 backdrop-blur-md border border-secondary-container/50 shadow-inner'
+                : 'text-on-surface-variant px-4 py-1.5 hover:bg-on-surface/5'
+            }`}
+          >
+            <span
+              className={`material-symbols-outlined ${item.isCenter ? 'text-4xl' : 'text-3xl'}`}
+              style={isActive || item.isFill ? { fontVariationSettings: "'FILL' 1" } : undefined}
             >
-              <Icon className={`w-6 h-6 transition-transform ${isActive ? 'scale-110' : ''}`} />
-              <span className="text-[10px] font-bold tracking-wide">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+              {item.icon}
+            </span>
+          </NavLink>
+        );
+      })}
+    </nav>
   );
 };

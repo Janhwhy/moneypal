@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useExpenses } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
-import { AmountDisplay } from '../components/AmountDisplay';
 import { CategoryChips } from '../components/CategoryChips';
 import { PaymentToggle } from '../components/PaymentToggle';
 import { Numpad } from '../components/Numpad';
-import { Plus, Check, Settings as SettingsIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
+const CURRENCY_GLYPH: Record<string, string> = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
 export const TapPage: React.FC = () => {
   const navigate = useNavigate();
@@ -18,13 +18,11 @@ export const TapPage: React.FC = () => {
   const [amount, setAmount] = useState('0');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>(() => {
-    return (localStorage.getItem('tappy_payment_method') as 'cash' | 'credit') || 'cash';
+    return (localStorage.getItem('moneypal_payment_method') as 'cash' | 'credit') || 'cash';
   });
-
   const [note, setNote] = useState('');
-  const [showNoteInput, setShowNoteInput] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [animateSave, setAnimateSave] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     if (categories.length > 0 && selectedCategoryId === null) {
@@ -34,44 +32,33 @@ export const TapPage: React.FC = () => {
 
   const handleKeyPress = (key: string) => {
     if (key === 'backspace') {
-      if (amount.length <= 1) {
-        setAmount('0');
-      } else {
-        setAmount(amount.slice(0, -1));
-      }
+      setAmount((prev) => (prev.length <= 1 ? '0' : prev.slice(0, -1)));
       return;
     }
-
     if (key === '.') {
       if (amount.includes('.')) return;
-      setAmount(amount + '.');
+      setAmount((prev) => prev + '.');
       return;
     }
-
-    if (amount === '0') {
-      setAmount(key);
-    } else {
-      if (amount.includes('.')) {
-        const [, decimal] = amount.split('.');
-        if (decimal && decimal.length >= 2) return;
+    setAmount((prev) => {
+      if (prev === '0') return key;
+      if (prev.includes('.')) {
+        const [, dec] = prev.split('.');
+        if (dec && dec.length >= 2) return prev;
       }
-      setAmount(amount + key);
-    }
+      return prev + key;
+    });
   };
 
   const handlePaymentMethodChange = (method: 'cash' | 'credit') => {
     setPaymentMethod(method);
-    localStorage.setItem('tappy_payment_method', method);
+    localStorage.setItem('moneypal_payment_method', method);
   };
 
   const handleSave = async () => {
     const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount) || parsedAmount <= 0 || selectedCategoryId === null) {
-      return;
-    }
-
+    if (isNaN(parsedAmount) || parsedAmount <= 0 || selectedCategoryId === null) return;
     setIsSaving(true);
-    setAnimateSave(true);
     try {
       await createExpense({
         category_id: selectedCategoryId,
@@ -79,85 +66,107 @@ export const TapPage: React.FC = () => {
         payment_method: paymentMethod,
         note: note.trim() || undefined,
       });
-
       setAmount('0');
       setNote('');
-      setShowNoteInput(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 1500);
     } catch (err) {
       console.error('Error saving expense:', err);
     } finally {
       setIsSaving(false);
-      setTimeout(() => setAnimateSave(false), 200);
     }
   };
 
   const hasAmount = parseFloat(amount) > 0;
+  const glyph = CURRENCY_GLYPH[settings?.currency || 'INR'] ?? '₹';
+  const numVal = parseFloat(amount);
+  const formatted = isNaN(numVal) || numVal === 0
+    ? `${glyph}0.00`
+    : `${glyph}${numVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 safe-pt max-w-md mx-auto relative px-4">
-      {/* Top Header */}
-      <div className="flex justify-between items-center py-4">
-        <h1 className="text-2xl font-black tracking-tight text-white select-none">Tappy</h1>
+    <div
+      className="flex flex-col max-w-md mx-auto w-full"
+      style={{ height: '100dvh', overflow: 'hidden' }}
+    >
+      {/* Fixed Header */}
+      <header className="flex justify-between items-center px-5 pt-3 pb-2 shrink-0">
+        <h1 className="font-bold text-xl text-primary tracking-tight">MoneyPal</h1>
         <button
+          type="button"
           onClick={() => navigate('/settings')}
-          className="p-2.5 bg-surface text-zinc-400 hover:text-white rounded-full transition-colors tap-feedback duration-75"
+          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          aria-label="Settings"
         >
-          <SettingsIcon className="w-5 h-5" />
+          <span className="material-symbols-outlined text-[22px]">settings</span>
         </button>
+      </header>
+
+      {/* Amount Display — compact */}
+      <div className="flex flex-col items-center py-1 shrink-0">
+        <div
+          id="amount-display"
+          className="text-[58px] font-bold text-primary-container tracking-tighter leading-none transition-transform duration-100"
+          style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+        >
+          {formatted}
+        </div>
       </div>
 
-      {/* Main Body Content */}
-      <div className="flex-1 flex flex-col justify-between">
-        {/* Amount & Note Area */}
-        <div className="flex-1 flex flex-col justify-center">
-          <AmountDisplay amount={amount} currency={settings?.currency || 'INR'} />
-
-          <div className="flex justify-center mb-4">
-            {!showNoteInput ? (
-              <button
-                type="button"
-                onClick={() => setShowNoteInput(true)}
-                className="text-xs text-zinc-500 font-bold hover:text-zinc-400 bg-surface px-3.5 py-1.5 rounded-full tap-feedback flex items-center gap-1"
-              >
-                <Plus className="w-3.5 h-3.5" /> add note
-              </button>
-            ) : (
-              <input
-                type="text"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="What was it for?"
-                className="w-4/5 text-center bg-surface border border-zinc-800 rounded-full px-4 py-1.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700"
-                autoFocus
-              />
-            )}
+      {/* Categories — compact */}
+      <div className="px-4 py-1 shrink-0">
+        {categoriesLoading ? (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="h-9 w-20 bg-white/40 rounded-full animate-pulse shrink-0" />
+            ))}
           </div>
-        </div>
+        ) : (
+          <CategoryChips
+            categories={categories}
+            selectedId={selectedCategoryId}
+            onSelect={setSelectedCategoryId}
+          />
+        )}
+      </div>
 
-        {/* Categories Chips */}
-        <div className="mb-4">
-          {categoriesLoading ? (
-            <div className="flex gap-2 overflow-x-auto px-4 py-2 no-scrollbar">
-              <div className="h-9 w-20 bg-surface rounded-full animate-pulse"></div>
-              <div className="h-9 w-24 bg-surface rounded-full animate-pulse"></div>
-              <div className="h-9 w-16 bg-surface rounded-full animate-pulse"></div>
-            </div>
-          ) : (
-            <CategoryChips
-              categories={categories}
-              selectedId={selectedCategoryId}
-              onSelect={setSelectedCategoryId}
-            />
-          )}
+      {/* Note Input — compact */}
+      <div className="px-4 py-1 shrink-0">
+        <div className="relative w-full">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60 pointer-events-none text-[18px]">
+            edit_note
+          </span>
+          <input
+            type="text"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Add a note..."
+            className="w-full liquid-glass rounded-xl py-2 pl-9 pr-3 text-on-surface text-[15px] focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-50 transition-all"
+          />
         </div>
+      </div>
 
-        {/* Numpad Area */}
-        <div className="mb-4">
-          <Numpad onKeyPress={handleKeyPress} />
-        </div>
+      {/* Numpad + Controls — fills remaining space */}
+      <div className="flex flex-col flex-1 px-4 pb-[78px] gap-2 min-h-0">
+        <div className="liquid-glass rounded-2xl p-3 flex flex-col gap-2 h-full">
+          {/* Numpad grid — grows to fill */}
+          <div className="grid grid-cols-3 gap-2 flex-1">
+            {['1','2','3','4','5','6','7','8','9','.','0','backspace'].map((key) => (
+              <button
+                key={key}
+                type="button"
+                aria-label={key === 'backspace' ? 'Delete' : key}
+                onClick={() => handleKeyPress(key)}
+                className="flex items-center justify-center rounded-xl bg-white/60 backdrop-blur-xl border border-white/80 shadow-sm hover:bg-white/80 text-on-surface text-[26px] font-medium transition-all active:scale-95 tap-feedback"
+              >
+                {key === 'backspace' ? (
+                  <span className="material-symbols-outlined text-[24px] font-light">backspace</span>
+                ) : key}
+              </button>
+            ))}
+          </div>
 
-        {/* Controls Section: Toggle & Save */}
-        <div className="flex flex-col gap-3">
+          {/* Payment toggle + Save */}
           <div className="flex justify-center">
             <PaymentToggle method={paymentMethod} onChange={handlePaymentMethodChange} />
           </div>
@@ -166,14 +175,18 @@ export const TapPage: React.FC = () => {
             type="button"
             disabled={!hasAmount || isSaving || selectedCategoryId === null}
             onClick={handleSave}
-            className={`w-full py-4 rounded-full text-base font-extrabold text-center transition-all flex items-center justify-center gap-2 select-none tap-feedback ${
+            className={`w-full h-12 rounded-full text-[16px] font-semibold flex items-center justify-center gap-2 transition-all shadow-md tap-feedback ${
               hasAmount && selectedCategoryId !== null
-                ? 'bg-white text-black active:bg-zinc-200'
-                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
-            } ${animateSave ? 'scale-95 duration-100' : 'duration-150'}`}
+                ? saveSuccess
+                  ? 'bg-on-primary-container text-white'
+                  : 'bg-pantone-686 text-white hover:opacity-90 active:scale-95'
+                : 'bg-pantone-686/30 text-white/50 cursor-not-allowed'
+            }`}
           >
-            <Check className="w-5 h-5 stroke-[3px]" />
-            <span>{isSaving ? 'Saving...' : 'Save'}</span>
+            <span className="material-symbols-outlined text-[18px]">
+              {saveSuccess ? 'check_circle' : 'check_circle'}
+            </span>
+            {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Transaction'}
           </button>
         </div>
       </div>

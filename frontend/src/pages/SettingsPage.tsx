@@ -1,47 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useSettings } from '../hooks/useSettings';
 import { request, getExportUrl } from '../api/client';
-import { ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Download, AlertTriangle } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { categories, createCategory, updateCategory, deleteCategory } = useCategories();
   const { settings, updateSettings } = useSettings();
 
-  // Settings State
-  const [budget, setBudget] = useState(String(settings.monthly_budget));
-  const [currency, setCurrency] = useState(settings.currency);
+  const [budget, setBudget] = useState(String(settings?.monthly_budget ?? 10000));
+  const [currency, setCurrency] = useState(settings?.currency ?? 'INR');
+  const [saveFeedback, setSaveFeedback] = useState(false);
 
-  // New Category State
+  // Sync when settings load
+  useEffect(() => {
+    if (settings) {
+      setBudget(String(settings.monthly_budget));
+      setCurrency(settings.currency);
+    }
+  }, [settings?.monthly_budget, settings?.currency]);
+
+  // New category state
   const [newCatName, setNewCatName] = useState('');
   const [newCatEmoji, setNewCatEmoji] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
-  // Save Settings
   const handleSaveSettings = async () => {
-    const parsedBudget = parseFloat(budget);
-    if (!isNaN(parsedBudget) && parsedBudget >= 0) {
-      await updateSettings({
-        monthly_budget: parsedBudget,
-        currency,
-      });
-      alert('Settings saved successfully!');
+    const parsed = parseFloat(budget);
+    if (!isNaN(parsed) && parsed >= 0) {
+      await updateSettings({ monthly_budget: parsed, currency });
+      setSaveFeedback(true);
+      setTimeout(() => setSaveFeedback(false), 1500);
     }
   };
 
-  // Add Category
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCatName.trim() || !newCatEmoji.trim()) return;
-
+    if (!newCatName.trim()) return;
     setIsAddingCategory(true);
     try {
-      await createCategory({
-        name: newCatName.trim(),
-        emoji: newCatEmoji.trim(),
-      });
+      await createCategory({ name: newCatName.trim(), emoji: newCatEmoji.trim() || '📁' });
       setNewCatName('');
       setNewCatEmoji('');
     } catch (err) {
@@ -51,49 +50,38 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  // Re-ordering Categories (Up/Down arrow helper swaps sort_order)
   const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
     if (direction === 'up' && index === 0) return;
     if (direction === 'down' && index === categories.length - 1) return;
-
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    const currentCat = categories[index];
-    const targetCat = categories[targetIndex];
-
+    const curr = categories[index];
+    const target = categories[targetIndex];
     try {
-      // Swap sort orders
-      const tempOrder = currentCat.sort_order;
-      await updateCategory({ id: currentCat.id, sort_order: targetCat.sort_order });
-      await updateCategory({ id: targetCat.id, sort_order: tempOrder });
+      await updateCategory({ id: curr.id, sort_order: target.sort_order });
+      await updateCategory({ id: target.id, sort_order: curr.sort_order });
     } catch (err) {
-      console.error('Failed to reorder categories:', err);
+      console.error('Failed to reorder:', err);
     }
   };
 
-  // Soft Delete Category
   const handleDeleteCategory = async (id: number, name: string) => {
-    if (window.confirm(`Are you sure you want to hide the "${name}" category? Historical expenses will be preserved.`)) {
+    if (window.confirm(`Hide "${name}"? Historical expenses are preserved.`)) {
       await deleteCategory(id);
     }
   };
 
-  // Export CSV
   const handleExport = () => {
     window.open(getExportUrl(), '_blank');
   };
 
-  // Clear Database (Double confirmation)
   const handleClearData = async () => {
-    const firstConfirm = window.confirm('WARNING: This will permanently delete ALL logged expenses. This action CANNOT be undone. Proceed?');
-    if (firstConfirm) {
-      const secondConfirm = window.confirm('Are you absolutely sure? Please confirm a second time to delete all transactions.');
-      if (secondConfirm) {
+    if (window.confirm('Delete ALL expense data? This cannot be undone.')) {
+      if (window.confirm('Second confirmation: permanently erase all transactions?')) {
         try {
           await request('/expenses', { method: 'DELETE' });
-          alert('All transaction data has been cleared.');
+          alert('All data cleared.');
         } catch (err) {
-          console.error('Failed to clear database:', err);
-          alert('Failed to clear data. Please verify backend connection.');
+          alert('Failed to clear data.');
         }
       }
     }
@@ -107,171 +95,180 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 safe-pt max-w-md mx-auto relative px-4">
-      {/* Top Header */}
-      <div className="flex justify-between items-center py-4 select-none">
-        <button type="button" onClick={() => navigate(-1)} className="p-2.5 bg-surface text-zinc-400 hover:text-white rounded-full transition-colors tap-feedback">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="flex flex-col min-h-screen max-w-md mx-auto w-full">
+      {/* Header */}
+      <header className="bg-surface/40 backdrop-blur-xl fixed top-0 w-full z-50 flex justify-between items-center px-gutter h-16 border-b border-on-primary-container/10 shadow-sm max-w-md">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          aria-label="Back"
+        >
+          <span className="material-symbols-outlined text-[24px]">arrow_back</span>
         </button>
-        <h1 className="text-lg font-black tracking-tight text-white">Settings</h1>
-        <div className="w-10"></div> {/* spacer */}
-      </div>
+        <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
+        <span className="w-6" />
+      </header>
 
-      {/* Settings Form Body */}
-      <div className="flex-1 overflow-y-auto no-scrollbar pb-10 space-y-6">
-        {/* Budget & Currency Box */}
-        <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl space-y-4">
-          <h2 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2 select-none">Preferences</h2>
+      {/* Main */}
+      <main className="flex-grow flex flex-col gap-md px-gutter pt-[80px] pb-[120px] w-full">
+        {/* Page title */}
+        <div className="px-sm pt-xl pb-base">
+          <h2 className="font-display-lg-mobile text-display-lg-mobile text-primary mb-base">Settings</h2>
+          <p className="font-body-lg text-on-surface-variant">Manage your financial environment.</p>
+        </div>
 
-          {/* Monthly Budget Input */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-zinc-400 select-none">Monthly Budget Limit</label>
-            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-2.5">
-              <span className="text-zinc-500 font-bold mr-1.5">{currency === 'INR' ? '₹' : currency}</span>
-              <input
-                type="number"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                className="bg-transparent text-white font-bold focus:outline-none w-full"
-                placeholder="10000"
-              />
+        {/* Budgeting */}
+        <section className="flex flex-col gap-base">
+          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Budgeting</h3>
+          <div className="ios-list-group">
+            <div className="ios-list-item px-md py-sm flex items-center justify-between">
+              <label className="font-body-lg text-on-surface" htmlFor="monthly-budget">Monthly Budget</label>
+              <div className="flex items-center">
+                <span className="text-on-surface-variant font-body-lg mr-xs">{currency === 'INR' ? '₹' : currency}</span>
+                <input
+                  id="monthly-budget"
+                  type="number"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                  className="input-minimal w-28 font-body-lg text-pantone-686 focus:ring-0 m-0"
+                  placeholder="10000"
+                />
+              </div>
+            </div>
+
+            {/* Currency */}
+            <div className="ios-list-item px-md py-sm flex items-center justify-between">
+              <span className="font-body-lg text-on-surface">Currency</span>
+              <div className="flex gap-xs">
+                {currencies.map((c) => (
+                  <button
+                    key={c.code}
+                    type="button"
+                    onClick={() => setCurrency(c.code)}
+                    className={`px-sm py-xs rounded-full font-label-md text-label-md transition-all tap-feedback ${
+                      currency === c.code
+                        ? 'bg-pantone-686/50 text-primary border border-pantone-686/30'
+                        : 'bg-white/40 text-on-surface-variant border border-white/60'
+                    }`}
+                  >
+                    {c.symbol}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* Currency Select */}
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-zinc-400 select-none">Preferred Currency</label>
-            <div className="grid grid-cols-4 gap-2">
-              {currencies.map((curr) => (
-                <button
-                  key={curr.code}
-                  type="button"
-                  onClick={() => setCurrency(curr.code)}
-                  className={`py-2 text-xs font-bold rounded-xl border transition-all ${
-                    currency === curr.code
-                      ? 'bg-white border-white text-black font-extrabold'
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400'
-                  }`}
-                >
-                  {curr.symbol} {curr.code}
-                </button>
-              ))}
-            </div>
-          </div>
-
           <button
             type="button"
             onClick={handleSaveSettings}
-            className="w-full py-3 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-white text-xs font-extrabold rounded-full transition-all text-center tap-feedback select-none"
+            className={`w-full liquid-glass text-pantone-686 rounded-xl min-h-[48px] flex items-center justify-center gap-sm hover:opacity-90 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback ${
+              saveFeedback ? 'bg-on-primary-container/20 text-on-primary-container' : ''
+            }`}
           >
-            Save Preferences
+            <span className="material-symbols-outlined text-[20px]">
+              {saveFeedback ? 'check_circle' : 'save'}
+            </span>
+            {saveFeedback ? 'Saved!' : 'Save Preferences'}
           </button>
-        </div>
+        </section>
 
-        {/* Categories Manager Box */}
-        <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl space-y-4">
-          <h2 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2 select-none">Categories</h2>
-
-          {/* Add Category Form */}
-          <form onSubmit={handleAddCategory} className="flex gap-2 mb-4">
-            <input
-              type="text"
-              value={newCatEmoji}
-              onChange={(e) => setNewCatEmoji(e.target.value)}
-              placeholder="🍔"
-              className="w-12 text-center bg-zinc-900 border border-zinc-800 rounded-2xl p-2.5 text-base focus:outline-none"
-              maxLength={2}
-            />
-            <input
-              type="text"
-              value={newCatName}
-              onChange={(e) => setNewCatName(e.target.value)}
-              placeholder="New Category Name"
-              className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-2.5 text-xs text-white focus:outline-none placeholder-zinc-600"
-            />
-            <button
-              type="submit"
-              disabled={isAddingCategory || !newCatName || !newCatEmoji}
-              className="p-2.5 bg-white text-black disabled:bg-zinc-800 disabled:text-zinc-600 rounded-2xl font-bold tap-feedback flex items-center justify-center"
-            >
-              <Plus className="w-5 h-5 stroke-[3px]" />
-            </button>
-          </form>
-
-          {/* Categories List */}
-          <div className="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
+        {/* Categories */}
+        <section className="flex flex-col gap-base mt-md">
+          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Categories</h3>
+          <div className="ios-list-group">
             {categories.map((cat, idx) => (
-              <div key={cat.id} className="flex items-center justify-between p-3 bg-zinc-900/60 rounded-2xl select-none">
-                <div className="flex items-center gap-2">
+              <div key={cat.id} className="ios-list-item px-md py-sm flex items-center justify-between">
+                <div className="flex items-center gap-sm">
                   <span className="text-lg">{cat.emoji}</span>
-                  <span className="text-xs font-bold text-white">{cat.name}</span>
+                  <span className="font-body-lg text-on-surface">{cat.name}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  {/* Up button */}
+                <div className="flex items-center gap-xs">
                   <button
                     type="button"
                     disabled={idx === 0}
                     onClick={() => handleMoveCategory(idx, 'up')}
-                    className="p-1.5 text-zinc-500 hover:text-white disabled:text-zinc-800"
+                    className="p-xs text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
                   >
-                    <ArrowUp className="w-4 h-4" />
+                    <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
                   </button>
-                  {/* Down button */}
                   <button
                     type="button"
                     disabled={idx === categories.length - 1}
                     onClick={() => handleMoveCategory(idx, 'down')}
-                    className="p-1.5 text-zinc-500 hover:text-white disabled:text-zinc-800"
+                    className="p-xs text-on-surface-variant hover:opacity-80 disabled:opacity-20 active:scale-95 transition-all"
                   >
-                    <ArrowDown className="w-4 h-4" />
+                    <span className="material-symbols-outlined text-[18px]">arrow_downward</span>
                   </button>
-                  {/* Delete button */}
                   <button
                     type="button"
                     onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                    className="p-1.5 text-accent-red/60 hover:text-accent-red ml-1"
+                    aria-label={`Delete ${cat.name}`}
+                    className="p-xs text-pantone-686 hover:opacity-80 active:scale-95 transition-all"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
                   </button>
                 </div>
               </div>
             ))}
+
+            {/* Add New Category row */}
+            <form onSubmit={handleAddCategory} className="ios-list-item px-md py-sm flex items-center gap-sm">
+              <input
+                type="text"
+                value={newCatEmoji}
+                onChange={(e) => setNewCatEmoji(e.target.value)}
+                placeholder="😊"
+                className="w-10 text-center bg-transparent border-none outline-none text-lg"
+                maxLength={2}
+              />
+              <input
+                type="text"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                placeholder="New category name..."
+                className="flex-1 bg-transparent border-none outline-none font-body-lg text-on-surface placeholder:text-on-surface-variant/50"
+              />
+              <button
+                type="submit"
+                disabled={isAddingCategory || !newCatName.trim()}
+                className="text-pantone-686 hover:opacity-80 active:scale-95 transition-all disabled:opacity-30"
+              >
+                <span className="material-symbols-outlined text-[20px]">add_circle</span>
+              </button>
+            </form>
           </div>
-        </div>
+        </section>
 
-        {/* Data Tools Box */}
-        <div className="bg-surface/50 border border-zinc-900 p-4 rounded-3xl space-y-4 select-none">
-          <h2 className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-2">Data Administration</h2>
-
-          <div className="flex flex-col gap-2">
-            {/* Export CSV */}
-            <button
-              type="button"
-              onClick={handleExport}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white text-xs font-bold rounded-2xl transition-all tap-feedback"
-            >
-              <Download className="w-4 h-4 text-zinc-400" />
-              <span>Export all to CSV</span>
-            </button>
-
-            {/* Reset DB */}
-            <button
-              type="button"
-              onClick={handleClearData}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-accent-red/10 border border-accent-red/20 text-accent-red text-xs font-bold rounded-2xl transition-all tap-feedback"
-            >
-              <AlertTriangle className="w-4 h-4" />
-              <span>Reset & Clear All Data</span>
-            </button>
-          </div>
-        </div>
+        {/* Data Management */}
+        <section className="flex flex-col gap-base mt-md">
+          <h3 className="font-label-md text-label-md text-on-surface-variant uppercase ml-sm">Data Management</h3>
+          <button
+            type="button"
+            onClick={handleExport}
+            className="liquid-glass w-full text-pantone-686 rounded-xl min-h-[56px] flex items-center justify-center gap-sm hover:opacity-90 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback"
+          >
+            <span className="material-symbols-outlined">download</span>
+            Export to CSV
+          </button>
+          <p className="font-body-sm text-on-surface-variant text-center opacity-70">
+            Download your complete transaction history.
+          </p>
+          <button
+            type="button"
+            onClick={handleClearData}
+            className="w-full border border-error/30 bg-error/5 text-error rounded-xl min-h-[48px] flex items-center justify-center gap-sm hover:bg-error/10 active:scale-[0.98] transition-all font-body-lg font-semibold tap-feedback"
+          >
+            <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+            Reset All Data
+          </button>
+        </section>
 
         {/* Footer */}
-        <div className="text-center text-[10px] font-bold text-zinc-600 select-none py-4">
-          <p>Tappy Expense Tracker</p>
-          <p className="mt-0.5">Version 1.0.0 • Local Database Mode</p>
+        <div className="text-center font-body-sm text-on-surface-variant opacity-50 py-md">
+          <p>MoneyPal — Serene Ledger</p>
+          <p className="mt-xs">Version 1.0.0 · Local Database Mode</p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
