@@ -3,12 +3,22 @@ import sys
 import os
 from logging.config import fileConfig
 
-# Ensure parent directory of env.py and current working directory are in sys.path
-backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-if os.getcwd() not in sys.path:
-    sys.path.insert(0, os.getcwd())
+# ── Python path ──────────────────────────────────────────────────────────────
+# Alembic loads env.py as a raw module (not via normal import machinery),
+# so we must explicitly inject the paths that contain the `app` package.
+#
+# In Docker the layout is:
+#   WORKDIR /app
+#   /app/alembic/env.py   ← this file
+#   /app/app/             ← our Python package
+#
+# We add every plausible root so it works both in Docker and locally.
+_here = os.path.dirname(os.path.abspath(__file__))     # …/alembic
+_backend = os.path.abspath(os.path.join(_here, ".."))  # …/   (backend root)
+for _p in [_backend, "/app", os.getcwd()]:
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+# ─────────────────────────────────────────────────────────────────────────────
 
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
