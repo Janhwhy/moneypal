@@ -105,21 +105,19 @@ export const TapPage: React.FC = () => {
         </div>
 
         {/* Category Chips */}
-        <div className="px-3 py-0.5">
-          {categoriesLoading ? (
-            <div className="flex gap-2 overflow-x-auto no-scrollbar">
-              {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="h-7 w-18 bg-white/60 rounded-full animate-pulse shrink-0 border border-[#E47A9D]/20" />
-              ))}
-            </div>
-          ) : (
-            <CategoryChips
-              categories={categories}
-              selectedId={selectedCategoryId}
-              onSelect={setSelectedCategoryId}
-            />
-          )}
-        </div>
+        {categoriesLoading ? (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar px-3 py-0.5">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="h-7 w-18 bg-white/60 rounded-full animate-pulse shrink-0 border border-[#E47A9D]/20" />
+            ))}
+          </div>
+        ) : (
+          <CategoryChips
+            categories={categories}
+            selectedId={selectedCategoryId}
+            onSelect={setSelectedCategoryId}
+          />
+        )}
 
         {/* Note input */}
         <div className="px-3 py-1">

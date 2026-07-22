@@ -18,14 +18,30 @@ if config.config_file_name is not None:
 from app.models import Base
 target_metadata = Base.metadata
 
-def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode."""
-    # Fallback to settings DATABASE_URL if configured
+
+def _resolve_db_url() -> str:
+    """
+    Return the database URL with the correct async driver prefix.
+    Render sets DATABASE_URL as "postgresql://..." but SQLAlchemy async needs
+    "postgresql+asyncpg://...". We patch it here, mirroring what db.py does.
+    """
     try:
         from app.config import settings
         url = settings.DATABASE_URL
     except ImportError:
-        url = config.get_main_option("sqlalchemy.url")
+        url = config.get_main_option("sqlalchemy.url") or ""
+
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+    return url
+
+
+def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode."""
+    url = _resolve_db_url()
 
     context.configure(
         url=url,
@@ -37,23 +53,20 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def do_run_migrations(connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()
 
+
 async def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
-    # Load configuration section
     configuration = config.get_section(config.config_ini_section) or {}
-    
-    # Override standard URL with app configuration
-    try:
-        from app.config import settings
-        configuration["sqlalchemy.url"] = settings.DATABASE_URL
-    except ImportError:
-        pass
+
+    # Override with the resolved (driver-prefixed) URL
+    configuration["sqlalchemy.url"] = _resolve_db_url()
 
     connectable = async_engine_from_config(
         configuration,
@@ -66,7 +79,9 @@ async def run_migrations_online() -> None:
 
     await connectable.dispose()
 
+
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     asyncio.run(run_migrations_online())
+

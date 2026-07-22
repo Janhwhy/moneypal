@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useSettings } from '../hooks/useSettings';
@@ -22,6 +22,20 @@ export const SettingsPage: React.FC = () => {
   const [budget, setBudget] = useState(String(settings?.monthly_budget ?? 10000));
   const [currency, setCurrency] = useState(settings?.currency ?? 'INR');
   const [saveFeedback, setSaveFeedback] = useState(false);
+
+  // Auto-sizing budget input
+  const budgetInputRef = useRef<HTMLInputElement>(null);
+  const budgetMirrorRef = useRef<HTMLSpanElement>(null);
+
+  const syncBudgetWidth = useCallback(() => {
+    if (budgetInputRef.current && budgetMirrorRef.current) {
+      budgetMirrorRef.current.textContent = budget || '0';
+      const w = budgetMirrorRef.current.offsetWidth;
+      budgetInputRef.current.style.width = `${Math.max(w + 4, 32)}px`;
+    }
+  }, [budget]);
+
+  useEffect(() => { syncBudgetWidth(); }, [syncBudgetWidth]);
 
   useEffect(() => {
     if (settings) {
@@ -186,12 +200,21 @@ export const SettingsPage: React.FC = () => {
               <label className="text-sm font-semibold text-[#1D1C1E]" htmlFor="monthly-budget">Monthly Budget</label>
               <div className="flex items-center">
                 <span className="text-[#8C3252] text-sm font-bold mr-1">{currency === 'INR' ? '₹' : currency}</span>
+                {/* Hidden mirror span — measures text width so the input can auto-size */}
+                <span
+                  ref={budgetMirrorRef}
+                  aria-hidden="true"
+                  className="absolute opacity-0 pointer-events-none whitespace-pre text-right font-extrabold text-lg"
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}
+                />
                 <input
+                  ref={budgetInputRef}
                   id="monthly-budget"
                   type="number"
+                  inputMode="decimal"
                   value={budget}
                   onChange={(e) => setBudget(e.target.value)}
-                  className="bg-transparent border-none outline-none w-28 text-right font-extrabold text-[#8C3252] text-lg"
+                  className="bg-transparent border-none outline-none text-right font-extrabold text-[#8C3252] text-lg transition-all min-w-[32px]"
                   style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}
                   placeholder="10000"
                 />
@@ -339,10 +362,11 @@ export const SettingsPage: React.FC = () => {
           <button
             type="button"
             onClick={handleExport}
-            className="liquid-glass bg-white/80 border border-[#E47A9D]/30 w-full text-[#8C3252] rounded-xl min-h-[48px] flex items-center justify-center gap-2 hover:bg-white active:scale-[0.98] transition-all text-sm font-bold tap-feedback shadow-sm"
+            disabled={isExporting}
+            className="liquid-glass bg-white/80 border border-[#E47A9D]/30 w-full text-[#8C3252] rounded-xl min-h-[48px] flex items-center justify-center gap-2 hover:bg-white active:scale-[0.98] transition-all text-sm font-bold tap-feedback shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className="material-symbols-outlined text-[18px] text-[#E47A9D]">download</span>
-            Export to CSV
+            <span className="material-symbols-outlined text-[18px] text-[#E47A9D]">{isExporting ? 'hourglass_empty' : 'download'}</span>
+            {isExporting ? 'Exporting…' : 'Export to CSV'}
           </button>
           <button
             type="button"

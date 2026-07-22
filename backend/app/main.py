@@ -5,6 +5,7 @@ from app.routers import categories, expenses, analytics, settings, export
 from app.routers import auth
 from app.db import engine
 from app.models import Base
+from app.config import settings as app_settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,10 +21,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Parse ALLOWED_ORIGINS from comma-separated env var.
+# "*" means all origins (dev only). In production, set to your Vercel URL.
+_origins_raw = app_settings.ALLOWED_ORIGINS.strip()
+if _origins_raw == "*":
+    _allow_origins = ["*"]
+    _allow_credentials = False  # browsers reject credentials with wildcard origin
+else:
+    _allow_origins = [o.strip() for o in _origins_raw.split(",") if o.strip()]
+    _allow_credentials = True
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_allow_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -41,3 +52,4 @@ app.include_router(export.router)
 @app.get("/")
 async def root():
     return {"status": "online", "app": "MoneyPal API", "documentation": "/docs"}
+
