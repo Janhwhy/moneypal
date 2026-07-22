@@ -5,8 +5,6 @@ Your money’s new best friend. 🤝
 MoneyPal = Money + Pal.
 
 Also… I go to Manipal. 🎓
-I wish I could say that wasn’t intentional.
-
 ⸻
 
 About
