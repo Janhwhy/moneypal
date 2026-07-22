@@ -3,15 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import categories, expenses, analytics, settings, export
 from app.routers import auth
-from app.db import engine
-from app.models import Base
 from app.config import settings as app_settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create all tables on startup (safe to call multiple times — uses CREATE IF NOT EXISTS)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Tables are managed by Alembic migrations (run before server start in CMD).
+    # No create_all here — Alembic is the single source of truth for schema.
     yield
 
 app = FastAPI(
