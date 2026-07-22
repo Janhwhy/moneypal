@@ -41,24 +41,29 @@ async def export_csv(
     expenses = result.scalars().all()
 
     def generate():
+        # Yield UTF-8 BOM first so Excel opens the file correctly
+        yield "\ufeff"
+
         output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["date", "time", "category", "amount", "payment_method", "note"])
+        writer = csv.writer(output, quoting=csv.QUOTE_ALL)
+        writer.writerow(["Date", "Time", "Category", "Amount", "Payment Method", "Note"])
         yield output.getvalue()
         output.seek(0)
         output.truncate(0)
 
         for exp in expenses:
-            date_str = exp.occurred_at.strftime("%Y-%m-%d")
+            # Use unambiguous date format; QUOTE_ALL prevents Excel from
+            # misinterpreting and collapsing the column to ###
+            date_str = exp.occurred_at.strftime("%d-%b-%Y")   # e.g. 22-Jul-2026
             time_str = exp.occurred_at.strftime("%H:%M:%S")
             cat_name = exp.category.name if exp.category else "Uncategorized"
-            writer.writerow([date_str, time_str, cat_name, str(exp.amount), exp.payment_method, exp.note or ""])
+            writer.writerow([date_str, time_str, cat_name, str(exp.amount), exp.payment_method or "", exp.note or ""])
             yield output.getvalue()
             output.seek(0)
             output.truncate(0)
 
     headers = {
         "Content-Disposition": 'attachment; filename="expenses_export.csv"',
-        "Content-Type": "text/csv"
+        "Content-Type": "text/csv; charset=utf-8-sig",
     }
-    return StreamingResponse(generate(), headers=headers)
+    return StreamingResponse(generate(), media_type="text/csv; charset=utf-8-sig", headers=headers)

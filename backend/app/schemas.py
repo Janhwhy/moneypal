@@ -1,7 +1,16 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
+from pydantic import BaseModel, Field, field_serializer
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 from decimal import Decimal
+
+# Indian Standard Time offset (+05:30)
+_IST = timezone(timedelta(hours=5, minutes=30))
+
+def _as_ist_isoformat(dt: datetime) -> str:
+    """Return an ISO-8601 string with +05:30 suffix so browsers parse it correctly."""
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=_IST)
+    return dt.astimezone(_IST).isoformat()
 
 # ── Auth / User Schemas ──────────────────────────────────────────────────────
 
@@ -72,6 +81,10 @@ class ExpenseResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @field_serializer("occurred_at", "created_at", "updated_at")
+    def serialize_dt(self, dt: datetime) -> str:
+        return _as_ist_isoformat(dt)
 
 # ── Settings Schemas ─────────────────────────────────────────────────────────
 

@@ -13,11 +13,11 @@ export const AmountDisplay: React.FC<AmountDisplayProps> = ({ amount, currency }
     : `${glyph}${numVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
-    <div className="flex flex-col items-center py-2 shrink-0 select-none">
+    <div className="flex flex-col items-center py-1 shrink-0 select-none">
       <div
         id="amount-display"
-        className="text-[58px] font-bold text-primary-container tracking-tighter leading-none transition-transform duration-100"
-        style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif' }}
+        className="text-[58px] font-extrabold text-[#8C3252] tracking-tighter leading-none transition-transform duration-100"
+        style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}
       >
         {formatted}
       </div>

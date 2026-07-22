@@ -11,7 +11,7 @@ export interface Expense {
   id: number;
   category_id: number;
   amount: number; // decimal parsed as number in React client
-  payment_method: 'cash' | 'credit';
+  payment_method: 'debit' | 'credit' | 'cash';
   note: string | null;
   occurred_at: string;
   created_at: string;

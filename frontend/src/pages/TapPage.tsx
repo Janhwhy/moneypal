@@ -80,20 +80,22 @@ export const TapPage: React.FC = () => {
   const hasAmount = parseFloat(amount) > 0;
 
   return (
-    <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none pb-[72px]">
+    <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none pb-[76px] bg-[#FAF8F5]">
 
       {/* ── TOP SECTION (Header, Amount, Chips, Note) ─────────── */}
       <div className="flex flex-col w-full shrink-0">
-        {/* Center-aligned & lowered Header */}
+        {/* Header */}
         <header className="relative flex justify-center items-center px-4 pt-3.5 pb-1">
-          <h1 className="font-bold text-xl text-primary tracking-tight text-center">MoneyPal</h1>
+          <h1 className="font-extrabold text-xl tracking-tight text-center text-[#8C3252] flex items-center gap-1">
+            Money<span className="text-[#E47A9D]">Pal</span>
+          </h1>
           <button
             type="button"
             onClick={() => navigate('/settings')}
-            className="absolute right-4 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+            className="absolute right-4 top-3.5 text-[#8C3252] hover:opacity-80 transition-opacity active:scale-95 w-9 h-9 rounded-full bg-white/70 flex items-center justify-center border border-[#E47A9D]/20 shadow-sm"
             aria-label="Settings"
           >
-            <span className="material-symbols-outlined text-[22px]">settings</span>
+            <span className="material-symbols-outlined text-[20px]">settings</span>
           </button>
         </header>
 
@@ -107,7 +109,7 @@ export const TapPage: React.FC = () => {
           {categoriesLoading ? (
             <div className="flex gap-2 overflow-x-auto no-scrollbar">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="h-7 w-18 bg-white/40 rounded-full animate-pulse shrink-0" />
+                <div key={n} className="h-7 w-18 bg-white/60 rounded-full animate-pulse shrink-0 border border-[#E47A9D]/20" />
               ))}
             </div>
           ) : (
@@ -120,9 +122,9 @@ export const TapPage: React.FC = () => {
         </div>
 
         {/* Note input */}
-        <div className="px-3 py-0.5">
+        <div className="px-3 py-1">
           <div className="relative w-full">
-            <span className="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant opacity-50 pointer-events-none text-[15px]">
+            <span className="material-symbols-outlined absolute left-3 top-2.5 text-[#8C3252] opacity-60 pointer-events-none text-[16px]">
               edit_note
             </span>
             <textarea
@@ -130,34 +132,36 @@ export const TapPage: React.FC = () => {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add a note…"
-              className="w-full liquid-glass rounded-xl py-1 pl-7 pr-2.5 text-on-surface text-[12px] focus:ring-0 outline-none border-transparent placeholder:text-on-surface-variant placeholder:opacity-40 resize-none leading-tight"
+              className="w-full liquid-glass rounded-xl py-1.5 pl-8 pr-3 text-[#1D1C1E] text-[13px] focus:ring-1 focus:ring-[#E47A9D] outline-none border border-[#E47A9D]/20 placeholder:text-[#6E6B73]/60 resize-none leading-tight transition-all"
             />
           </div>
         </div>
       </div>
 
-      {/* ── MIDDLE SECTION (Numpad Card — expands to fill ALL remaining height) ── */}
+      {/* ── MIDDLE SECTION (Numpad Card) ── */}
       <div className="flex-1 min-h-0 px-3 py-1.5">
-        <div className="liquid-glass rounded-2xl p-2.5 h-full shadow-lg border border-white/80 flex flex-col">
+        <div className="liquid-glass rounded-2xl p-2.5 h-full border border-white flex flex-col shadow-sm">
           <Numpad onKeyPress={handleKeyPress} />
         </div>
       </div>
 
       {/* ── BOTTOM SECTION (Save Transaction Button) ────── */}
-      <div className="shrink-0 flex flex-col px-3 pt-0.5 pb-1">
+      <div className="shrink-0 flex flex-col px-3 pt-1 pb-1">
         <button
           type="button"
           disabled={!hasAmount || isSaving || selectedCategoryId === null}
           onClick={handleSave}
-          className={`w-full h-11 rounded-full text-[14px] font-extrabold flex items-center justify-center gap-2 transition-all shadow-md tap-feedback ${
+          className={`w-full h-12 rounded-full text-[15px] font-bold flex items-center justify-center gap-2 transition-all tap-feedback ${
             hasAmount && selectedCategoryId !== null
               ? saveSuccess
-                ? 'bg-on-primary-container text-white'
-                : 'bg-pantone-686 text-white hover:opacity-90 active:scale-95'
-              : 'bg-pantone-686/30 text-white/50 cursor-not-allowed'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'pink-gradient-btn text-white hover:opacity-95 active:scale-95'
+              : 'bg-[#D0A1BA]/30 text-white/70 cursor-not-allowed border border-white'
           }`}
         >
-          <span className="material-symbols-outlined text-[17px]">check_circle</span>
+          <span className="material-symbols-outlined text-[18px]">
+            {saveSuccess ? 'check_circle' : 'check_circle'}
+          </span>
           {isSaving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Transaction'}
         </button>
       </div>

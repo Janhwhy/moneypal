@@ -85,16 +85,19 @@ export const HistoryPage: React.FC = () => {
   const ranges: ('today' | 'week' | 'month' | 'year' | 'all')[] = ['today', 'week', 'month', 'year', 'all'];
 
   return (
-    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[76px] select-none">
+    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[76px] select-none bg-[#FAF8F5]">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
-        <h1 className="font-bold text-lg text-primary tracking-tight text-center">MoneyPal</h1>
+      <header className="bg-white/70 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-4 pb-3 border-b border-[#E47A9D]/20 shadow-sm">
+        <h1 className="font-extrabold text-xl text-[#8C3252] tracking-tight text-center flex items-center gap-1">
+          Transaction <span className="text-[#E47A9D]">History</span>
+        </h1>
         <button
           type="button"
-          aria-label="Notifications"
-          className="absolute right-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          onClick={() => navigate('/settings')}
+          aria-label="Settings"
+          className="absolute right-5 top-3.5 text-[#8C3252] hover:opacity-80 transition-opacity active:scale-95 w-8 h-8 rounded-full bg-white flex items-center justify-center border border-[#E47A9D]/20 shadow-sm"
         >
-          <span className="material-symbols-outlined text-[22px]">notifications</span>
+          <span className="material-symbols-outlined text-[20px]">settings</span>
         </button>
       </header>
 
@@ -102,7 +105,7 @@ export const HistoryPage: React.FC = () => {
       <main className="flex-grow flex flex-col px-4 pt-3 pb-2 w-full">
         {/* Over budget alert */}
         {isOverBudget && (
-          <div className="mb-3 flex items-center gap-2 bg-error/10 border border-error/30 text-error rounded-xl px-4 py-2.5 text-sm font-semibold">
+          <div className="mb-3 flex items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm">
             <span className="material-symbols-outlined text-[18px]">warning</span>
             Over budget by {currencyGlyph}{(totalSpent - monthlyBudget).toLocaleString('en-IN', { maximumFractionDigits: 0 })} this month!
           </div>
@@ -111,7 +114,7 @@ export const HistoryPage: React.FC = () => {
         {/* Search Bar */}
         <div className="relative mb-3">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <span className="material-symbols-outlined text-outline text-[18px]">search</span>
+            <span className="material-symbols-outlined text-[#8C3252] opacity-60 text-[18px]">search</span>
           </div>
           <input
             type="text"
@@ -119,21 +122,21 @@ export const HistoryPage: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search transactions"
             placeholder="Search transactions..."
-            className="w-full bg-surface-container-highest/50 border-none focus:ring-2 focus:ring-pantone-686 text-on-surface py-2 pl-9 pr-3 rounded-[10px] transition-all text-[15px] outline-none placeholder:text-outline/70"
+            className="w-full bg-white/80 border border-[#E47A9D]/20 focus:border-[#E47A9D] text-[#1D1C1E] py-2 pl-9 pr-3 rounded-xl transition-all text-[14px] outline-none placeholder:text-[#6E6B73]/60 shadow-sm"
           />
         </div>
 
         {/* Range Pills */}
-        <div className="flex liquid-glass rounded-full p-[3px] gap-[2px] mb-4">
+        <div className="flex bg-white/70 rounded-full p-[3px] gap-[2px] mb-4 border border-[#E47A9D]/20 shadow-sm">
           {ranges.map((r) => (
             <button
               key={r}
               type="button"
               onClick={() => setRange(r)}
-              className={`flex-1 text-center py-1.5 text-[12px] font-semibold rounded-full transition-all capitalize tap-feedback ${
+              className={`flex-1 text-center py-1.5 text-[12px] font-bold rounded-full transition-all capitalize tap-feedback ${
                 range === r
-                  ? 'bg-pantone-686/50 text-primary shadow border border-pantone-686/30'
-                  : 'text-on-surface-variant hover:bg-white/30'
+                  ? 'bg-gradient-to-r from-[#E47A9D] to-[#C85A7E] text-white shadow-sm'
+                  : 'text-[#6E6B73] hover:text-[#8C3252]'
               }`}
             >
               {RANGE_LABELS[r]}
@@ -146,19 +149,19 @@ export const HistoryPage: React.FC = () => {
           {isLoading ? (
             [1, 2, 3].map((n) => (
               <div key={n} className="space-y-2">
-                <div className="h-3 w-1/3 bg-white/40 rounded animate-pulse" />
-                <div className="h-14 w-full liquid-glass rounded-[14px] animate-pulse" />
+                <div className="h-3 w-1/3 bg-white/60 rounded animate-pulse" />
+                <div className="h-14 w-full bg-white/60 rounded-2xl animate-pulse border border-[#E47A9D]/20" />
               </div>
             ))
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-16 text-error select-none">
+            <div className="flex flex-col items-center justify-center py-16 text-rose-600 select-none">
               <span className="material-symbols-outlined text-[44px] mb-2 opacity-60">error</span>
               <p className="text-[15px] font-semibold">Failed to load transactions</p>
             </div>
           ) : grouped.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-on-surface-variant select-none">
-              <span className="material-symbols-outlined text-[44px] mb-2 opacity-40">event_busy</span>
-              <p className="text-[15px] opacity-60">No expenses in this period</p>
+            <div className="flex flex-col items-center justify-center py-16 text-[#6E6B73] select-none">
+              <span className="material-symbols-outlined text-[44px] mb-2 text-[#E47A9D] opacity-60">event_busy</span>
+              <p className="text-[15px] opacity-70 font-medium">No expenses in this period</p>
             </div>
           ) : (
             grouped.map(([dateLabel, group]) => {
@@ -166,14 +169,14 @@ export const HistoryPage: React.FC = () => {
               return (
                 <section key={dateLabel}>
                   <div className="flex justify-between items-center px-1 mb-1.5">
-                    <h2 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+                    <h2 className="text-[11px] font-bold text-[#6E6B73] uppercase tracking-wider">
                       {getDateLabel(group.date)}
                     </h2>
-                    <span className={`text-[12px] font-bold ${isDayNetNegative ? 'text-[#C85A7E]' : 'text-primary-container'}`}>
+                    <span className={`text-[12px] font-bold ${isDayNetNegative ? 'text-emerald-700' : 'text-[#8C3252]'}`} style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
                       {isDayNetNegative ? `+${currencyGlyph}${Math.abs(group.total).toFixed(2)}` : `${currencyGlyph}${group.total.toFixed(2)}`}
                     </span>
                   </div>
-                  <div className="liquid-glass rounded-[14px] overflow-hidden">
+                  <div className="ios-list-group">
                     {group.items.map((item) => (
                       <ExpenseListItem
                         key={item.id}
@@ -189,24 +192,24 @@ export const HistoryPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Floating Total Bar — sitting directly above BottomNav with no gap */}
+      {/* Floating Total Bar */}
       <div className="sticky bottom-1 mt-2 mb-1 mx-4 z-30">
-        <div className={`rounded-2xl p-3 px-4 flex justify-between items-center font-semibold text-[15px] shadow-md ${
+        <div className={`rounded-2xl p-3 px-4 flex justify-between items-center font-semibold text-[15px] shadow-md backdrop-blur-xl ${
           isOverBudget
-            ? 'bg-error/15 border border-error/30 text-error'
-            : 'liquid-glass text-on-surface'
+            ? 'bg-rose-50 border border-rose-200 text-rose-700'
+            : 'liquid-glass bg-white/85 border border-[#E47A9D]/30 text-[#1D1C1E]'
         }`}>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 text-sm font-bold">
             {isOverBudget && <span className="material-symbols-outlined text-[16px]">warning</span>}
             {totalSpent < 0 ? 'Net Income' : 'Total Spent'}
           </span>
-          <span className={`font-bold ${
+          <span className={`font-extrabold text-lg ${
             isOverBudget
-              ? 'text-error'
+              ? 'text-rose-700'
               : totalSpent < 0
-              ? 'text-[#E47A9D]'
-              : 'text-primary-container'
-          }`}>
+              ? 'text-emerald-700'
+              : 'text-[#8C3252]'
+          }`} style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
             {totalSpent < 0
               ? `+${currencyGlyph}${Math.abs(totalSpent).toFixed(2)}`
               : `${currencyGlyph}${totalSpent.toFixed(2)}`}

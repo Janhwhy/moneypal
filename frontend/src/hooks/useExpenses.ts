@@ -20,7 +20,7 @@ export function useExpenses(filters?: { range?: string; categoryId?: number; sta
   });
 
   const createExpenseMutation = useMutation({
-    mutationFn: (newExpense: { category_id: number; amount: number; payment_method: 'cash' | 'credit'; note?: string; occurred_at?: string }) =>
+    mutationFn: (newExpense: { category_id: number; amount: number; payment_method: 'debit' | 'credit' | 'cash' | string; note?: string; occurred_at?: string }) =>
       request<Expense>('/expenses', {
         method: 'POST',
         body: JSON.stringify(newExpense),
@@ -32,11 +32,12 @@ export function useExpenses(filters?: { range?: string; categoryId?: number; sta
   });
 
   const updateExpenseMutation = useMutation({
-    mutationFn: ({ id, ...updates }: { id: number; category_id?: number; amount?: number; payment_method?: 'cash' | 'credit'; note?: string | null; occurred_at?: string }) =>
+    mutationFn: ({ id, ...updates }: { id: number; category_id?: number; amount?: number; payment_method?: 'debit' | 'credit' | 'cash' | string; note?: string | null; occurred_at?: string }) =>
       request<Expense>(`/expenses/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(updates),
       }),
+
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       queryClient.invalidateQueries({ queryKey: ['analytics'] });

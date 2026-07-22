@@ -50,3 +50,47 @@ export function getExportUrl(start?: string, end?: string): string {
   const query = params.toString();
   return `${BASE_URL}/export/csv${query ? `?${query}` : ''}`;
 }
+
+export async function exportCSV(start?: string, end?: string): Promise<void> {
+  const token = getToken();
+  const params = new URLSearchParams();
+  if (start) params.append('start', start);
+  if (end) params.append('end', end);
+  if (token) params.append('token', token);
+  const query = params.toString();
+
+  const headers = new Headers();
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await fetch(`${BASE_URL}/export/csv${query ? `?${query}` : ''}`, {
+    headers,
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem('moneypal_token');
+    localStorage.removeItem('moneypal_user');
+    window.location.href = '/login';
+    throw new Error('Session expired. Please sign in again.');
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Export failed with status ${response.status}`);
+  }
+
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `moneypal_expenses_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  // Small delay before cleanup so the browser can initiate the download
+  setTimeout(() => {
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }, 150);
+}
+

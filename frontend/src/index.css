@@ -4,9 +4,9 @@
 
 @layer base {
   html, body {
-    background-color: #fefbdb;
-    color: #1d1c0a;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+    background-color: #FAF8F5;
+    color: #1D1C1E;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Outfit", system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
@@ -14,30 +14,54 @@
   }
 }
 
-/* Liquid Glass container styles */
+/* Light Mode Liquid Glass container styles */
 .liquid-glass {
-  background: rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(0, 29, 17, 0.05);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(228, 122, 157, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(140, 50, 82, 0.08);
+}
+
+.liquid-glass-glow {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(228, 122, 157, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(228, 122, 157, 0.2);
 }
 
 /* iOS list group container */
 .ios-list-group {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.75);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(228, 122, 157, 0.2);
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(140, 50, 82, 0.05);
 }
 
 .ios-list-item {
-  border-bottom: 1px solid rgba(0, 29, 17, 0.06);
+  border-bottom: 1px solid rgba(140, 50, 82, 0.08);
 }
 .ios-list-item:last-child {
   border-bottom: none;
+}
+
+/* Gradient Text */
+.pink-gradient-text {
+  background: linear-gradient(135deg, #E47A9D 0%, #8C3252 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pink-gradient-btn {
+  background: linear-gradient(135deg, #E47A9D 0%, #C85A7E 50%, #8C3252 100%);
+  box-shadow: 0 6px 24px rgba(228, 122, 157, 0.35);
+}
+.pink-gradient-btn:hover {
+  box-shadow: 0 8px 28px rgba(228, 122, 157, 0.5);
 }
 
 /* iOS Safe Areas */
@@ -60,7 +84,7 @@
 /* Tap feedback animation */
 @keyframes tap-shrink {
   0%   { transform: scale(1); }
-  50%  { transform: scale(0.95); }
+  50%  { transform: scale(0.96); }
   100% { transform: scale(1); }
 }
 .tap-feedback:active {
