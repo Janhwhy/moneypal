@@ -7,6 +7,9 @@ ENV PYTHONPATH=/app:.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Invalidate cache to force Render to pick up env.py changes
+ARG CACHE_BUST=1
+
 COPY . .
 
 EXPOSE 8000
