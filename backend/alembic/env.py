@@ -1,5 +1,14 @@
 import asyncio
+import sys
+import os
 from logging.config import fileConfig
+
+# Ensure parent directory of env.py and current working directory are in sys.path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+if os.getcwd() not in sys.path:
+    sys.path.insert(0, os.getcwd())
 
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
