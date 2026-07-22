@@ -2,26 +2,28 @@ import asyncio
 import sys
 import os
 from logging.config import fileConfig
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-print("CWD:", os.getcwd())
-print("sys.path:", sys.path)
-print("Contents of /app:", os.listdir("/app"))
 
-# ── Python path ──────────────────────────────────────────────────────────────
-# Alembic loads env.py as a raw module (not via normal import machinery),
-# so we must explicitly inject the paths that contain the `app` package.
+# ── Bulletproof sys.path injection ───────────────────────────────────────────
+# This MUST be the very first thing that runs, before any 'from app.' imports.
+# Alembic loads env.py as a raw file (not via normal import machinery), so
+# sys.path is NOT automatically set from PYTHONPATH in all cases.
 #
-# In Docker the layout is:
-#   WORKDIR /app
-#   /app/alembic/env.py   ← this file
-#   /app/app/             ← our Python package
+# Docker layout (WORKDIR /app, COPY backend/ -> /app):
+#   /app/alembic/env.py   <- this file
+#   /app/app/             <- our Python package
+#   /app/alembic.ini
 #
-# We add every plausible root so it works both in Docker and locally.
-_here = os.path.dirname(os.path.abspath(__file__))     # …/alembic
-_backend = os.path.abspath(os.path.join(_here, ".."))  # …/   (backend root)
-for _p in [_backend, "/app", os.getcwd()]:
+_here = os.path.dirname(os.path.abspath(__file__))     # /app/alembic
+_backend_root = os.path.abspath(os.path.join(_here, ".."))  # /app
+
+# Insert at position 0 so our package takes priority
+for _p in [_backend_root, "/app", os.getcwd()]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
+
+# Debug output to confirm paths are correct
+print("[alembic/env.py] sys.path:", sys.path[:5], flush=True)
+print("[alembic/env.py] /app contents:", os.listdir("/app") if os.path.exists("/app") else "N/A", flush=True)
 # ─────────────────────────────────────────────────────────────────────────────
 
 from sqlalchemy import pool
@@ -107,4 +109,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     asyncio.run(run_migrations_online())
-
