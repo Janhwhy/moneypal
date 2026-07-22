@@ -11,13 +11,16 @@ from app.models import Expense, Category, Setting, User
 from app.schemas import SummaryResponse, CategorySpendItem, MonthSpendItem
 from app.deps import get_current_user
 
+# Indian Standard Time (+05:30)
+IST = timezone(timedelta(hours=5, minutes=30))
+
 router = APIRouter(
     prefix="/analytics",
     tags=["analytics"],
 )
 
 def get_period_dates(period: str):
-    now = datetime.now()
+    now = datetime.now(IST).replace(tzinfo=None)
     if period in ("today", "day"):
         start = datetime(now.year, now.month, now.day)
         days_elapsed = 1
@@ -39,7 +42,7 @@ def get_period_dates(period: str):
         days_elapsed = now.day
         total_days = calendar.monthrange(now.year, now.month)[1]
 
-    # Include full end of current day to ensure all transactions today are included
+    # Include full end of current day in IST
     end = datetime(now.year, now.month, now.day, 23, 59, 59)
     return start, end, days_elapsed, total_days
 
@@ -75,8 +78,8 @@ async def get_summary(
     if period == "month":
         budget_left = monthly_budget - spent
     else:
-        now = datetime.now(timezone.utc)
-        month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+        now = datetime.now(IST).replace(tzinfo=None)
+        month_start = datetime(now.year, now.month, 1)
         m_spent_stmt = select(func.sum(net_expense_amount)).filter(
             and_(
                 Expense.user_id == current_user.id,
@@ -160,10 +163,10 @@ async def get_by_month(
     current_user: User = Depends(get_current_user)
 ):
     if not year:
-        year = datetime.now(timezone.utc).year
+        year = datetime.now(IST).year
 
-    start_date = datetime(year, 1, 1, tzinfo=timezone.utc)
-    end_date = datetime(year, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year, 12, 31, 23, 59, 59)
 
     stmt = (
         select(

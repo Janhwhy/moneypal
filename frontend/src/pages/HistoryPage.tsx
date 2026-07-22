@@ -39,7 +39,7 @@ export const HistoryPage: React.FC = () => {
       if (!exp || !exp.occurred_at) return;
       const date = new Date(exp.occurred_at);
       if (isNaN(date.getTime())) return;
-      const key = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+      const key = date.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: 'long', day: 'numeric' });
       if (!groups[key]) groups[key] = { date, items: [], total: 0 };
       groups[key].items.push(exp);
 
@@ -62,13 +62,24 @@ export const HistoryPage: React.FC = () => {
   const isOverBudget = range === 'month' && monthlyBudget > 0 && totalSpent > monthlyBudget;
 
   const getDateLabel = (date: Date) => {
-    if (!date || isNaN(date.getTime())) return 'Unknown Date';
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-    return date.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (!date || isNaN(date.getTime())) return 'UNKNOWN DATE';
+    const dateFormatted = date.toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    }).toUpperCase();
+
+    const istNowStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const istDateStr = date.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const istYesterdayStr = yesterdayDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+    if (istDateStr === istNowStr) return `TODAY · ${dateFormatted}`;
+    if (istDateStr === istYesterdayStr) return `YESTERDAY · ${dateFormatted}`;
+    return dateFormatted;
   };
 
   const ranges: ('today' | 'week' | 'month' | 'year' | 'all')[] = ['today', 'week', 'month', 'year', 'all'];

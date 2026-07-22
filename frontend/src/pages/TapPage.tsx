@@ -45,6 +45,15 @@ export const TapPage: React.FC = () => {
     });
   };
 
+  const getISTISOString = () => {
+    const d = new Date();
+    // IST is UTC + 5.5 hours = +330 minutes
+    const istOffset = 330 * 60 * 1000;
+    const istTime = new Date(d.getTime() + (d.getTimezoneOffset() * 60000) + istOffset);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${istTime.getFullYear()}-${pad(istTime.getMonth() + 1)}-${pad(istTime.getDate())}T${pad(istTime.getHours())}:${pad(istTime.getMinutes())}:${pad(istTime.getSeconds())}`;
+  };
+
   const handleSave = async () => {
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0 || selectedCategoryId === null) return;
@@ -55,6 +64,7 @@ export const TapPage: React.FC = () => {
         amount: parsedAmount,
         payment_method: 'debit',
         note: note.trim() || undefined,
+        occurred_at: getISTISOString(),
       });
       setAmount('0');
       setNote('');

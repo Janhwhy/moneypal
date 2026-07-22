@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAnalytics, useMonthlySpend } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
 import { CategoryProgressBar } from '../components/CategoryProgressBar';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts';
+
+const PIE_COLORS = [
+  '#E47A9D', // Pantone Pink Carnation
+  '#C85A7E', // Deep Rose Carnation
+  '#8C3252', // Rich Maroon Carnation
+  '#D0A1BA', // Pantone 686 Pink
+  '#F3B5CA', // Light Blossom Pink
+  '#7A5369', // Plum Carnation
+  '#B84A6E', // Secondary Carnation
+  '#FECCE6', // Soft Pastel Pink
+];
 
 export const AnalyticsPage: React.FC = () => {
-  const [period, setPeriod] = useState<'week' | 'month' | 'year'>('month');
+  const navigate = useNavigate();
+  const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'year'>('month');
   const { summary, categorySpend, isSummaryLoading } = useAnalytics(period);
   const { monthlySpend, isLoading: isMonthlyLoading } = useMonthlySpend(new Date().getFullYear());
   const { settings } = useSettings();
@@ -33,6 +46,13 @@ export const AnalyticsPage: React.FC = () => {
     amount: Number(item.amount),
   }));
 
+  const pieChartData = categorySpend.map((item, idx) => ({
+    name: `${item.emoji} ${item.name}`,
+    value: Math.max(0, Number(item.amount)),
+    percent: item.percent,
+    color: PIE_COLORS[idx % PIE_COLORS.length],
+  }));
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload?.length) {
       return (
@@ -47,13 +67,25 @@ export const AnalyticsPage: React.FC = () => {
     return null;
   };
 
+  const PieCustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="liquid-glass rounded-xl p-2.5 shadow-2xl border border-white/90 text-xs select-none">
+          <p className="font-bold text-primary text-[13px]">{data.name}</p>
+          <p className="font-extrabold text-[#C85A7E] mt-0.5">
+            {currencyGlyph}{Number(data.value).toFixed(2)} ({Number(data.percent).toFixed(1)}%)
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[95px] select-none">
       {/* Header */}
       <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
-        <button type="button" className="absolute left-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
-          <span className="material-symbols-outlined text-[22px]">menu</span>
-        </button>
         <h1 className="font-bold text-lg text-primary tracking-tight text-center">MoneyPal</h1>
         <button type="button" onClick={() => navigate('/settings')} className="absolute right-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
           <span className="material-symbols-outlined text-[22px]">account_circle</span>
@@ -159,17 +191,64 @@ export const AnalyticsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Category Breakdown */}
-        <div className="flex flex-col gap-2 mb-4">
-          <h3 className="font-bold text-[16px] text-primary">Breakdown</h3>
+        {/* Category Breakdown Card with Pie Chart */}
+        <div className="liquid-glass rounded-2xl p-4 mb-4 flex flex-col gap-3">
+          <div className="flex justify-between items-center">
+            <h3 className="font-bold text-[16px] text-primary flex items-center gap-2">
+              <span className="material-symbols-outlined text-[20px] text-[#C85A7E]">pie_chart</span>
+              Category Breakdown
+            </h3>
+          </div>
+
           {categorySpend.length === 0 ? (
-            <div className="text-center py-4 text-[14px] text-on-surface-variant opacity-60">
-              No data for this period
+            <div className="text-center py-6 text-[14px] text-on-surface-variant opacity-60">
+              No expense data for this period
             </div>
           ) : (
-            categorySpend.map((item, idx) => (
-              <CategoryProgressBar key={item.category_id} item={item} currency={settings?.currency ?? 'INR'} index={idx} />
-            ))
+            <>
+              {/* Interactive Donut / Pie Chart */}
+              <div className="h-52 w-full relative flex items-center justify-center my-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieChartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={4}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {pieChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<PieCustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center Ring Label */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[10px] uppercase font-bold text-on-surface-variant/70 tracking-wider">Total</span>
+                  <span className="text-[15px] font-black text-primary leading-tight">
+                    {currencyGlyph}{summary ? Number(summary.spent).toFixed(0) : '0'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Category Breakdown Progress Bars with matching color dots */}
+              <div className="flex flex-col gap-2 mt-1">
+                {categorySpend.map((item, idx) => (
+                  <CategoryProgressBar
+                    key={item.category_id}
+                    item={item}
+                    currency={settings?.currency ?? 'INR'}
+                    index={idx}
+                    color={PIE_COLORS[idx % PIE_COLORS.length]}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
 
@@ -188,7 +267,7 @@ export const AnalyticsPage: React.FC = () => {
                   <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 4 }}>
                     <XAxis dataKey="name" stroke="#717973" fontSize={9} tickLine={false} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(64,102,83,0.08)' }} />
-                    <Bar dataKey="amount" fill="#749d87" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="amount" fill="#C85A7E" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

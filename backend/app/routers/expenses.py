@@ -10,6 +10,17 @@ from app.models import Expense, Category, User
 from app.schemas import ExpenseCreate, ExpenseUpdate, ExpenseResponse
 from app.deps import get_current_user
 
+# Indian Standard Time (+05:30)
+IST = timezone(timedelta(hours=5, minutes=30))
+
+def to_ist_naive(dt: Optional[datetime] = None) -> datetime:
+    """Converts datetime to Indian Standard Time and returns naive datetime for SQLite storage."""
+    if dt is None:
+        return datetime.now(IST).replace(tzinfo=None)
+    if dt.tzinfo is not None:
+        return dt.astimezone(IST).replace(tzinfo=None)
+    return dt
+
 router = APIRouter(
     prefix="/expenses",
     tags=["expenses"],
@@ -27,7 +38,7 @@ async def create_expense(
     if not cat_result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Invalid category_id")
 
-    occurred = expense.occurred_at if expense.occurred_at else datetime.now(timezone.utc)
+    occurred = to_ist_naive(expense.occurred_at)
 
     new_expense = Expense(
         user_id=current_user.id,
@@ -60,7 +71,7 @@ async def get_expenses(
     filters = [Expense.user_id == current_user.id]
 
     if range:
-        now = datetime.now()
+        now = datetime.now(IST).replace(tzinfo=None)
         if range in ("today", "day"):
             start_date = datetime(now.year, now.month, now.day)
             filters.append(Expense.occurred_at >= start_date)
@@ -75,9 +86,9 @@ async def get_expenses(
             filters.append(Expense.occurred_at >= start_date)
 
     if start:
-        filters.append(Expense.occurred_at >= start.replace(tzinfo=None))
+        filters.append(Expense.occurred_at >= to_ist_naive(start))
     if end:
-        filters.append(Expense.occurred_at <= end.replace(tzinfo=None))
+        filters.append(Expense.occurred_at <= to_ist_naive(end))
     if category_id:
         filters.append(Expense.category_id == category_id)
 
@@ -125,6 +136,8 @@ async def update_expense(
 
     update_data = expense.model_dump(exclude_unset=True)
     for key, value in update_data.items():
+        if key == "occurred_at" and value is not None:
+            value = to_ist_naive(value)
         setattr(db_expense, key, value)
 
     await db.commit()

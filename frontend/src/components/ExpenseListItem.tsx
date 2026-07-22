@@ -8,10 +8,28 @@ interface ExpenseListItemProps {
 
 export const ExpenseListItem: React.FC<ExpenseListItemProps> = ({ expense, onClick }) => {
   const formattedAmount = Number(expense.amount).toFixed(2);
-  const dateStr = new Date(expense.occurred_at).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+
+  // Extract HH:mm directly from IST timestamp string
+  const getTimeString = (rawDate: string) => {
+    if (!rawDate) return '';
+    const match = rawDate.match(/[T\s](\d{2}:\d{2})/);
+    if (match) return match[1];
+    const d = new Date(rawDate);
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
+  };
+
+  const timeStr = getTimeString(expense.occurred_at);
+  const dateObj = new Date(expense.occurred_at);
+  const dayDateStr = isNaN(dateObj.getTime())
+    ? ''
+    : dateObj.toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+      });
 
   const isCredit = expense.payment_method?.toLowerCase() === 'credit';
 
@@ -31,7 +49,13 @@ export const ExpenseListItem: React.FC<ExpenseListItemProps> = ({ expense, onCli
               {isCredit ? 'Credit' : 'Debit'}
             </span>
             <span>•</span>
-            <span>{dateStr}</span>
+            {dayDateStr && (
+              <>
+                <span>{dayDateStr}</span>
+                <span>•</span>
+              </>
+            )}
+            <span>{timeStr}</span>
             {expense.note && (
               <>
                 <span>•</span>
