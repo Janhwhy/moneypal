@@ -3,7 +3,13 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    height: 100%;
+    overflow: hidden;
     background-color: #FAF8F5;
     color: #1D1C1E;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Outfit", system-ui, sans-serif;
@@ -11,6 +17,10 @@
     -webkit-touch-callout: none;
     user-select: none;
     @apply antialiased overflow-x-hidden;
+  }
+  #root {
+    height: 100%;
+    overflow: hidden;
   }
 }
 
@@ -64,12 +74,12 @@
   box-shadow: 0 8px 28px rgba(228, 122, 157, 0.5);
 }
 
-/* iOS Safe Areas */
+/* iOS Safe Areas — use env() with generous fallback for iPhone 15 Pro notch/island */
 .safe-pb {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
 }
 .safe-pt {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
 }
 
 /* Hide scrollbars */

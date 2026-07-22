@@ -11,7 +11,10 @@ export const BottomNav: React.FC = () => {
   const location = useLocation();
 
   return (
-    <nav className="liquid-glass rounded-t-3xl border-t border-[#E47A9D]/30 shadow-[0_-8px_32px_rgba(140,50,82,0.08)] absolute bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 safe-pb select-none bg-white/80 backdrop-blur-2xl">
+    <nav
+      className="liquid-glass rounded-t-3xl border-t border-[#E47A9D]/30 shadow-[0_-8px_32px_rgba(140,50,82,0.08)] absolute bottom-0 left-0 right-0 w-full z-50 flex justify-around items-center px-4 pt-3 select-none bg-white/80 backdrop-blur-2xl"
+      style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)' }}
+    >
       {NAV_ITEMS.map((item) => {
         const isActive =
           item.to === '/'

@@ -80,7 +80,7 @@ export const TapPage: React.FC = () => {
   const hasAmount = parseFloat(amount) > 0;
 
   return (
-    <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none pb-[76px] bg-[#FAF8F5]">
+    <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none bg-[#FAF8F5]" style={{ paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom, 0px), 8px))' }}>
 
       {/* ── TOP SECTION (Header, Amount, Chips, Note) ─────────── */}
       <div className="flex flex-col w-full shrink-0">
@@ -143,8 +143,8 @@ export const TapPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION (Save Transaction Button) ────── */}
-      <div className="shrink-0 flex flex-col px-3 pt-1 pb-1">
+      {/* ── BOTTOM SECTION (Save Transaction Button) ──── */}
+      <div className="shrink-0 flex flex-col px-3 pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+8px)]">
         <button
           type="button"
           disabled={!hasAmount || isSaving || selectedCategoryId === null}
