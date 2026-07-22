@@ -1,11 +1,11 @@
 services:
   - type: web
     name: moneypal-backend
-    runtime: python
-    rootDir: backend
-    buildCommand: pip install -r requirements.txt
-    # Runs DB migrations before starting the server on every deploy.
-    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    runtime: docker
+    # Tell Render where to find the Dockerfile and what to use as the build context.
+    # Both paths are relative to the repo root.
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -19,8 +19,6 @@ services:
         generateValue: true
       - key: JWT_EXPIRE_MINUTES
         value: "10080"
-      - key: PYTHON_VERSION
-        value: "3.11.0"
       # Set this to your Vercel frontend URL after first deploy, e.g.:
       # https://moneypal.vercel.app
       # Comma-separate multiple origins if needed.
@@ -32,4 +30,3 @@ databases:
     databaseName: moneypal
     user: moneypal
     plan: free
-
