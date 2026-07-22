@@ -36,6 +36,7 @@ def _resolve_db_url() -> str:
     """
     Read DATABASE_URL from app.config and ensure the correct async driver prefix.
     Render provides 'postgresql://...' but SQLAlchemy async requires 'postgresql+asyncpg://'.
+    Neon/Supabase append '?sslmode=require' which asyncpg rejects — rewrite to '?ssl=require'.
     """
     try:
         from app.config import settings
@@ -47,6 +48,9 @@ def _resolve_db_url() -> str:
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
     elif url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+
+    # asyncpg uses 'ssl', not 'sslmode'
+    url = url.replace("sslmode=require", "ssl=require")
 
     return url
 

@@ -1,15 +1,23 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.config import settings
 
-# Render provides DATABASE_URL as "postgresql://..." but SQLAlchemy async
-# requires "postgresql+asyncpg://...". Patch it transparently so the same
-# env var works on both Render (PostgreSQL) and local (SQLite).
-_db_url = settings.DATABASE_URL
-if _db_url.startswith("postgresql://"):
-    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-elif _db_url.startswith("postgres://"):
-    _db_url = _db_url.replace("postgres://", "postgresql+asyncpg://", 1)
 
+def _patch_db_url(url: str) -> str:
+    """Patch the DATABASE_URL for asyncpg compatibility:
+    1. postgresql:// / postgres://  →  postgresql+asyncpg://
+    2. ?sslmode=require              →  ?ssl=require
+       (asyncpg uses 'ssl', not 'sslmode')
+    """
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    elif url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+    # Fix SSL param name — Neon/Supabase append ?sslmode=require which asyncpg rejects
+    url = url.replace("sslmode=require", "ssl=require")
+    return url
+
+
+_db_url = _patch_db_url(settings.DATABASE_URL)
 engine = create_async_engine(_db_url, echo=False)
 
 
