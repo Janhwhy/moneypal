@@ -2,6 +2,10 @@ import asyncio
 import sys
 import os
 from logging.config import fileConfig
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+print("CWD:", os.getcwd())
+print("sys.path:", sys.path)
+print("Contents of /app:", os.listdir("/app"))
 
 # ── Python path ──────────────────────────────────────────────────────────────
 # Alembic loads env.py as a raw module (not via normal import machinery),
