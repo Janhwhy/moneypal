@@ -5,7 +5,6 @@ import { useExpenses } from '../hooks/useExpenses';
 import { useSettings } from '../hooks/useSettings';
 import { AmountDisplay } from '../components/AmountDisplay';
 import { CategoryChips } from '../components/CategoryChips';
-import { PaymentToggle } from '../components/PaymentToggle';
 import { Numpad } from '../components/Numpad';
 
 export const TapPage: React.FC = () => {
@@ -16,9 +15,6 @@ export const TapPage: React.FC = () => {
 
   const [amount, setAmount] = useState('0');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi'>(() => {
-    return (localStorage.getItem('moneypal_payment_method') as 'cash' | 'upi') || 'cash';
-  });
   const [note, setNote] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -49,11 +45,6 @@ export const TapPage: React.FC = () => {
     });
   };
 
-  const handlePaymentMethodChange = (method: 'cash' | 'upi') => {
-    setPaymentMethod(method);
-    localStorage.setItem('moneypal_payment_method', method);
-  };
-
   const handleSave = async () => {
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0 || selectedCategoryId === null) return;
@@ -62,7 +53,7 @@ export const TapPage: React.FC = () => {
       await createExpense({
         category_id: selectedCategoryId,
         amount: parsedAmount,
-        payment_method: paymentMethod,
+        payment_method: 'debit',
         note: note.trim() || undefined,
       });
       setAmount('0');
@@ -81,22 +72,22 @@ export const TapPage: React.FC = () => {
   return (
     <div className="flex flex-col w-full h-full min-h-0 overflow-hidden select-none pb-[72px]">
 
-      {/* ── TOP SECTION (Fixed height items) ─────────────────── */}
+      {/* ── TOP SECTION (Header, Amount, Chips, Note) ─────────── */}
       <div className="flex flex-col w-full shrink-0">
-        {/* Header */}
-        <header className="flex justify-between items-center px-4 pt-1.5 pb-0.5">
-          <h1 className="font-bold text-xl text-primary tracking-tight">MoneyPal</h1>
+        {/* Center-aligned & lowered Header */}
+        <header className="relative flex justify-center items-center px-4 pt-3.5 pb-1">
+          <h1 className="font-bold text-xl text-primary tracking-tight text-center">MoneyPal</h1>
           <button
             type="button"
             onClick={() => navigate('/settings')}
-            className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+            className="absolute right-4 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
             aria-label="Settings"
           >
             <span className="material-symbols-outlined text-[22px]">settings</span>
           </button>
         </header>
 
-        {/* Amount */}
+        {/* Amount Display */}
         <div className="flex flex-col items-center py-0.5">
           <AmountDisplay amount={amount} currency={settings?.currency || 'INR'} />
         </div>
@@ -118,7 +109,7 @@ export const TapPage: React.FC = () => {
           )}
         </div>
 
-        {/* Note — compact 2-line input */}
+        {/* Note input */}
         <div className="px-3 py-0.5">
           <div className="relative w-full">
             <span className="material-symbols-outlined absolute left-2.5 top-2 text-on-surface-variant opacity-50 pointer-events-none text-[15px]">
@@ -135,21 +126,15 @@ export const TapPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ── MIDDLE SECTION (Numpad Card — expands to fill remaining space) ── */}
-      <div className="flex-1 min-h-0 px-3 py-1">
-        <div className="liquid-glass rounded-2xl p-2 h-full shadow-lg border border-white/80 flex flex-col">
+      {/* ── MIDDLE SECTION (Numpad Card — expands to fill ALL remaining height) ── */}
+      <div className="flex-1 min-h-0 px-3 py-1.5">
+        <div className="liquid-glass rounded-2xl p-2.5 h-full shadow-lg border border-white/80 flex flex-col">
           <Numpad onKeyPress={handleKeyPress} />
         </div>
       </div>
 
-      {/* ── BOTTOM SECTION (Payment Toggle + Save Button) ────── */}
-      <div className="shrink-0 flex flex-col gap-1.5 px-3 pt-0.5 pb-1">
-        {/* Cash | UPI Toggle */}
-        <div className="flex justify-center">
-          <PaymentToggle method={paymentMethod} onChange={handlePaymentMethodChange} />
-        </div>
-
-        {/* Save Transaction Button */}
+      {/* ── BOTTOM SECTION (Save Transaction Button) ────── */}
+      <div className="shrink-0 flex flex-col px-3 pt-0.5 pb-1">
         <button
           type="button"
           disabled={!hasAmount || isSaving || selectedCategoryId === null}

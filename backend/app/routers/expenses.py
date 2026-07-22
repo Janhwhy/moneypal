@@ -21,7 +21,6 @@ async def create_expense(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Verify category belongs to user
     cat_result = await db.execute(
         select(Category).filter(Category.id == expense.category_id, Category.user_id == current_user.id)
     )
@@ -48,11 +47,11 @@ async def create_expense(
 
 @router.get("", response_model=List[ExpenseResponse])
 async def get_expenses(
-    range: Optional[str] = Query(None, description="today|week|month|all"),
+    range: Optional[str] = Query(None, description="day|today|week|month|year|all"),
     category_id: Optional[int] = None,
     start: Optional[datetime] = None,
     end: Optional[datetime] = None,
-    limit: int = 100,
+    limit: int = 200,
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -62,7 +61,7 @@ async def get_expenses(
 
     if range:
         now = datetime.now()
-        if range == "today":
+        if range in ("today", "day"):
             start_date = datetime(now.year, now.month, now.day)
             filters.append(Expense.occurred_at >= start_date)
         elif range == "week":
@@ -70,6 +69,9 @@ async def get_expenses(
             filters.append(Expense.occurred_at >= start_date)
         elif range == "month":
             start_date = datetime(now.year, now.month, 1)
+            filters.append(Expense.occurred_at >= start_date)
+        elif range == "year":
+            start_date = datetime(now.year, 1, 1)
             filters.append(Expense.occurred_at >= start_date)
 
     if start:

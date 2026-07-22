@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, func, and_, case
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
 import calendar
@@ -18,7 +18,11 @@ router = APIRouter(
 
 def get_period_dates(period: str):
     now = datetime.now()
-    if period == "week":
+    if period in ("today", "day"):
+        start = datetime(now.year, now.month, now.day)
+        days_elapsed = 1
+        total_days = 1
+    elif period == "week":
         start = datetime(now.year, now.month, now.day) - timedelta(days=now.weekday())
         days_elapsed = now.weekday() + 1
         total_days = 7
@@ -34,7 +38,16 @@ def get_period_dates(period: str):
         start = datetime(now.year, now.month, 1)
         days_elapsed = now.day
         total_days = calendar.monthrange(now.year, now.month)[1]
-    return start, now, days_elapsed, total_days
+
+    # Include full end of current day to ensure all transactions today are included
+    end = datetime(now.year, now.month, now.day, 23, 59, 59)
+    return start, end, days_elapsed, total_days
+
+# Helper expression for net amount: +amount for debit, -amount for credit (case-insensitive)
+net_expense_amount = case(
+    (func.lower(Expense.payment_method) == "credit", -Expense.amount),
+    else_=Expense.amount
+)
 
 @router.get("/summary", response_model=SummaryResponse)
 async def get_summary(
@@ -44,7 +57,7 @@ async def get_summary(
 ):
     start, end, days_elapsed, total_days = get_period_dates(period)
 
-    spent_stmt = select(func.sum(Expense.amount)).filter(
+    spent_stmt = select(func.sum(net_expense_amount)).filter(
         and_(
             Expense.user_id == current_user.id,
             Expense.occurred_at >= start,
@@ -64,7 +77,7 @@ async def get_summary(
     else:
         now = datetime.now(timezone.utc)
         month_start = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
-        m_spent_stmt = select(func.sum(Expense.amount)).filter(
+        m_spent_stmt = select(func.sum(net_expense_amount)).filter(
             and_(
                 Expense.user_id == current_user.id,
                 Expense.occurred_at >= month_start,
@@ -94,7 +107,7 @@ async def get_by_category(
 ):
     start, end, _, _ = get_period_dates(period)
 
-    total_spent_stmt = select(func.sum(Expense.amount)).filter(
+    total_spent_stmt = select(func.sum(net_expense_amount)).filter(
         and_(
             Expense.user_id == current_user.id,
             Expense.occurred_at >= start,
@@ -109,7 +122,7 @@ async def get_by_category(
             Category.id,
             Category.name,
             Category.emoji,
-            func.sum(Expense.amount).label("amount")
+            func.sum(net_expense_amount).label("amount")
         )
         .join(Expense, Expense.category_id == Category.id)
         .filter(
@@ -120,7 +133,7 @@ async def get_by_category(
             )
         )
         .group_by(Category.id, Category.name, Category.emoji)
-        .order_by(func.sum(Expense.amount).desc())
+        .order_by(func.sum(net_expense_amount).desc())
     )
 
     result = await db.execute(stmt)
@@ -155,7 +168,7 @@ async def get_by_month(
     stmt = (
         select(
             func.extract('month', Expense.occurred_at).label('month_num'),
-            func.sum(Expense.amount).label('amount')
+            func.sum(net_expense_amount).label('amount')
         )
         .filter(
             and_(

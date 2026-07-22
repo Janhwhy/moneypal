@@ -6,15 +6,16 @@ import { ExpenseListItem } from '../components/ExpenseListItem';
 import type { Expense } from '../api/types';
 
 const RANGE_LABELS: Record<string, string> = {
-  today: 'Today',
+  today: 'Day',
   week: 'Week',
   month: 'Month',
+  year: 'Year',
   all: 'All',
 };
 
 export const HistoryPage: React.FC = () => {
   const navigate = useNavigate();
-  const [range, setRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
+  const [range, setRange] = useState<'today' | 'week' | 'month' | 'year' | 'all'>('month');
   const [search, setSearch] = useState('');
   const { expenses, isLoading, error } = useExpenses({ range });
   const { settings } = useSettings();
@@ -41,13 +42,23 @@ export const HistoryPage: React.FC = () => {
       const key = date.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
       if (!groups[key]) groups[key] = { date, items: [], total: 0 };
       groups[key].items.push(exp);
-      groups[key].total += Number(exp.amount || 0);
+
+      const amt = Number(exp.amount || 0);
+      const isCredit = exp.payment_method?.toLowerCase() === 'credit';
+      groups[key].total += isCredit ? -amt : amt;
     });
     return Object.entries(groups).sort((a, b) => b[1].date.getTime() - a[1].date.getTime());
   };
 
   const grouped = groupExpensesByDay(filtered);
-  const totalSpent = filtered.reduce((sum, e) => sum + Number(e?.amount || 0), 0);
+
+  // Calculate Net Spent: Debit is (+), Credit is (-)
+  const totalSpent = filtered.reduce((sum, e) => {
+    const amt = Number(e?.amount || 0);
+    const isCredit = e?.payment_method?.toLowerCase() === 'credit';
+    return sum + (isCredit ? -amt : amt);
+  }, 0);
+
   const isOverBudget = range === 'month' && monthlyBudget > 0 && totalSpent > monthlyBudget;
 
   const getDateLabel = (date: Date) => {
@@ -60,25 +71,24 @@ export const HistoryPage: React.FC = () => {
     return date.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
-  const ranges: ('today' | 'week' | 'month' | 'all')[] = ['today', 'week', 'month', 'all'];
+  const ranges: ('today' | 'week' | 'month' | 'year' | 'all')[] = ['today', 'week', 'month', 'year', 'all'];
 
   return (
-    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
+    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[76px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
-        <span className="w-6" />
-        <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
+        <h1 className="font-bold text-lg text-primary tracking-tight text-center">MoneyPal</h1>
         <button
           type="button"
           aria-label="Notifications"
-          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          className="absolute right-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
         >
           <span className="material-symbols-outlined text-[22px]">notifications</span>
         </button>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow flex flex-col px-4 pt-3 pb-4 w-full">
+      <main className="flex-grow flex flex-col px-4 pt-3 pb-2 w-full">
         {/* Over budget alert */}
         {isOverBudget && (
           <div className="mb-3 flex items-center gap-2 bg-error/10 border border-error/30 text-error rounded-xl px-4 py-2.5 text-sm font-semibold">
@@ -140,44 +150,55 @@ export const HistoryPage: React.FC = () => {
               <p className="text-[15px] opacity-60">No expenses in this period</p>
             </div>
           ) : (
-            grouped.map(([dateLabel, group]) => (
-              <section key={dateLabel}>
-                <div className="flex justify-between items-center px-1 mb-1.5">
-                  <h2 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
-                    {getDateLabel(group.date)}
-                  </h2>
-                  <span className="text-[12px] font-bold text-primary-container">
-                    {currencyGlyph}{(group.total || 0).toFixed(2)}
-                  </span>
-                </div>
-                <div className="liquid-glass rounded-[14px] overflow-hidden">
-                  {group.items.map((item) => (
-                    <ExpenseListItem
-                      key={item.id}
-                      expense={item}
-                      onClick={() => navigate(`/expenses/${item.id}/edit`)}
-                    />
-                  ))}
-                </div>
-              </section>
-            ))
+            grouped.map(([dateLabel, group]) => {
+              const isDayNetNegative = group.total < 0;
+              return (
+                <section key={dateLabel}>
+                  <div className="flex justify-between items-center px-1 mb-1.5">
+                    <h2 className="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">
+                      {getDateLabel(group.date)}
+                    </h2>
+                    <span className={`text-[12px] font-bold ${isDayNetNegative ? 'text-[#C85A7E]' : 'text-primary-container'}`}>
+                      {isDayNetNegative ? `+${currencyGlyph}${Math.abs(group.total).toFixed(2)}` : `${currencyGlyph}${group.total.toFixed(2)}`}
+                    </span>
+                  </div>
+                  <div className="liquid-glass rounded-[14px] overflow-hidden">
+                    {group.items.map((item) => (
+                      <ExpenseListItem
+                        key={item.id}
+                        expense={item}
+                        onClick={() => navigate(`/expenses/${item.id}/edit`)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })
           )}
         </div>
       </main>
 
-      {/* Floating Total Bar */}
-      <div className="sticky bottom-[80px] my-2 mx-4 z-30">
-        <div className={`rounded-2xl p-3 px-4 flex justify-between items-center font-semibold text-[15px] ${
+      {/* Floating Total Bar — sitting directly above BottomNav with no gap */}
+      <div className="sticky bottom-1 mt-2 mb-1 mx-4 z-30">
+        <div className={`rounded-2xl p-3 px-4 flex justify-between items-center font-semibold text-[15px] shadow-md ${
           isOverBudget
             ? 'bg-error/15 border border-error/30 text-error'
             : 'liquid-glass text-on-surface'
         }`}>
           <span className="flex items-center gap-1.5">
             {isOverBudget && <span className="material-symbols-outlined text-[16px]">warning</span>}
-            Total Spent
+            {totalSpent < 0 ? 'Net Income' : 'Total Spent'}
           </span>
-          <span className={`font-bold ${isOverBudget ? 'text-error' : 'text-primary-container'}`}>
-            {currencyGlyph}{totalSpent.toFixed(2)}
+          <span className={`font-bold ${
+            isOverBudget
+              ? 'text-error'
+              : totalSpent < 0
+              ? 'text-[#E47A9D]'
+              : 'text-primary-container'
+          }`}>
+            {totalSpent < 0
+              ? `+${currencyGlyph}${Math.abs(totalSpent).toFixed(2)}`
+              : `${currencyGlyph}${totalSpent.toFixed(2)}`}
           </span>
         </div>
       </div>

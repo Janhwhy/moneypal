@@ -13,6 +13,8 @@ export const ExpenseListItem: React.FC<ExpenseListItemProps> = ({ expense, onCli
     minute: '2-digit',
   });
 
+  const isCredit = expense.payment_method?.toLowerCase() === 'credit';
+
   return (
     <div
       onClick={() => onClick(expense)}
@@ -25,7 +27,9 @@ export const ExpenseListItem: React.FC<ExpenseListItemProps> = ({ expense, onCli
             {expense.category?.name || 'Uncategorized'}
           </div>
           <div className="text-[12px] text-on-surface-variant font-medium flex items-center gap-1 mt-0.5">
-            <span className="capitalize">{expense.payment_method}</span>
+            <span className={`capitalize font-semibold ${isCredit ? 'text-[#C85A7E]' : 'text-rose-700'}`}>
+              {isCredit ? 'Credit' : 'Debit'}
+            </span>
             <span>•</span>
             <span>{dateStr}</span>
             {expense.note && (
@@ -38,8 +42,8 @@ export const ExpenseListItem: React.FC<ExpenseListItemProps> = ({ expense, onCli
         </div>
       </div>
 
-      <div className="font-bold text-[15px] text-primary-container shrink-0 ml-2">
-        ₹{formattedAmount}
+      <div className={`font-bold text-[15px] shrink-0 ml-2 ${isCredit ? 'text-[#E47A9D]' : 'text-rose-600'}`}>
+        {isCredit ? '+' : '-'}₹{formattedAmount}
       </div>
     </div>
   );

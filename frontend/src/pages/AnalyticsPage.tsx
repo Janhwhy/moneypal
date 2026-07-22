@@ -15,7 +15,13 @@ export const AnalyticsPage: React.FC = () => {
   const spent = Number(summary?.spent ?? 0);
   const isOverBudget = period === 'month' && monthlyBudget > 0 && spent > monthlyBudget;
 
-  const periods: ('week' | 'month' | 'year')[] = ['week', 'month', 'year'];
+  const periods: ('day' | 'week' | 'month' | 'year')[] = ['day', 'week', 'month', 'year'];
+  const PERIOD_LABELS: Record<string, string> = {
+    day: 'Day',
+    week: 'Week',
+    month: 'Month',
+    year: 'Year',
+  };
 
   const [viewMonth, setViewMonth] = useState(new Date());
   const monthLabel = viewMonth.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
@@ -42,14 +48,14 @@ export const AnalyticsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
+    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[95px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
-        <button type="button" className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
+        <button type="button" className="absolute left-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
           <span className="material-symbols-outlined text-[22px]">menu</span>
         </button>
-        <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
-        <button type="button" className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
+        <h1 className="font-bold text-lg text-primary tracking-tight text-center">MoneyPal</h1>
+        <button type="button" onClick={() => navigate('/settings')} className="absolute right-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95">
           <span className="material-symbols-outlined text-[22px]">account_circle</span>
         </button>
       </header>
@@ -79,7 +85,7 @@ export const AnalyticsPage: React.FC = () => {
                   : 'text-on-surface-variant hover:bg-white/30'
               }`}
             >
-              {p}
+              {PERIOD_LABELS[p]}
             </button>
           ))}
         </div>
@@ -103,10 +109,18 @@ export const AnalyticsPage: React.FC = () => {
           }`}>
             <div className="absolute top-0 right-0 w-24 h-24 bg-white opacity-30 rounded-full blur-2xl -mr-12 -mt-12" />
             <p className="text-[11px] font-semibold text-on-surface-variant uppercase mb-1 tracking-wider z-10">
-              Total Spent
+              {Number(summary.spent) < 0 ? 'Net Income' : 'Total Spent'}
             </p>
-            <p className={`text-[40px] font-bold z-10 leading-none ${isOverBudget ? 'text-error' : 'text-primary-container'}`}>
-              {currencyGlyph}{Number(summary.spent).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            <p className={`text-[40px] font-bold z-10 leading-none ${
+              isOverBudget
+                ? 'text-error'
+                : Number(summary.spent) < 0
+                ? 'text-[#E47A9D]'
+                : 'text-primary-container'
+            }`}>
+              {Number(summary.spent) < 0
+                ? `+${currencyGlyph}${Math.abs(Number(summary.spent)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                : `${currencyGlyph}${Number(summary.spent).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
             </p>
             {monthlyBudget > 0 && (
               <p className={`text-[12px] mt-1 z-10 ${isOverBudget ? 'text-error font-semibold' : 'text-on-surface-variant'}`}>

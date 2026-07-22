@@ -70,14 +70,14 @@ export const LoginPage: React.FC = () => {
     <div className="flex flex-col items-center justify-between w-full h-full min-h-full select-none overflow-hidden"
       style={{ background: 'var(--color-background)' }}
     >
-      {/* Top decorative blob */}
+      {/* Top decorative blobs */}
       <div
-        className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-20 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #D0A1BA 0%, transparent 70%)' }}
+        className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #E47A9D 0%, transparent 70%)' }}
       />
       <div
-        className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full opacity-15 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #001d11 0%, transparent 70%)' }}
+        className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full opacity-20 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #8C3252 0%, transparent 70%)' }}
       />
 
       {/* Content */}
@@ -88,16 +88,16 @@ export const LoginPage: React.FC = () => {
           <div
             className="w-20 h-20 rounded-[28px] flex items-center justify-center shadow-xl"
             style={{
-              background: 'linear-gradient(135deg, #001d11 0%, #0a3622 100%)',
-              boxShadow: '0 8px 32px rgba(0,29,17,0.25)',
+              background: 'linear-gradient(135deg, #E47A9D 0%, #8C3252 100%)',
+              boxShadow: '0 8px 32px rgba(228,122,157,0.3)',
             }}
           >
             <span className="text-4xl">💸</span>
           </div>
-          <h1 className="text-4xl font-black text-primary tracking-tight mt-1" style={{ color: '#001d11' }}>
+          <h1 className="text-4xl font-black tracking-tight mt-1" style={{ color: '#8C3252' }}>
             MoneyPal
           </h1>
-          <p className="text-sm text-center font-medium opacity-60 max-w-[220px] leading-relaxed" style={{ color: '#001d11' }}>
+          <p className="text-sm text-center font-medium opacity-60 max-w-[220px] leading-relaxed" style={{ color: '#8C3252' }}>
             Your personal spending tracker, beautifully simple
           </p>
         </div>
@@ -110,11 +110,11 @@ export const LoginPage: React.FC = () => {
             backdropFilter: 'blur(24px)',
             WebkitBackdropFilter: 'blur(24px)',
             border: '1.5px solid rgba(255,255,255,0.85)',
-            boxShadow: '0 8px 32px rgba(0,29,17,0.08)',
+            boxShadow: '0 8px 32px rgba(140,50,82,0.1)',
           }}
         >
           <div className="text-center">
-            <p className="text-[13px] font-semibold opacity-60" style={{ color: '#001d11' }}>
+            <p className="text-[13px] font-semibold opacity-60" style={{ color: '#8C3252' }}>
               Sign in to continue
             </p>
           </div>
@@ -124,7 +124,7 @@ export const LoginPage: React.FC = () => {
 
           {loading && (
             <div className="flex justify-center">
-              <div className="w-5 h-5 border-2 border-[#D0A1BA] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[#E47A9D] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
 
@@ -134,7 +134,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Footer note */}
-        <p className="text-[11px] text-center opacity-40 max-w-[260px] leading-relaxed" style={{ color: '#001d11' }}>
+        <p className="text-[11px] text-center opacity-40 max-w-[260px] leading-relaxed" style={{ color: '#8C3252' }}>
           Your data is private and tied to your Google account. No passwords needed.
         </p>
       </div>

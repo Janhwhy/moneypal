@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { useSettings } from '../hooks/useSettings';
+import { useAuth } from '../contexts/AuthContext';
 import { request, getExportUrl } from '../api/client';
 
 const POPULAR_EMOJIS = [
@@ -13,6 +14,7 @@ const POPULAR_EMOJIS = [
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { categories, createCategory, updateCategory, deleteCategory } = useCategories();
   const { settings, updateSettings } = useSettings();
 
@@ -103,28 +105,64 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col w-full min-h-full pb-[85px] select-none relative">
-      {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
+    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[95px] select-none relative">
+      {/* Center-aligned & lowered Header */}
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          className="absolute left-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
           aria-label="Back"
         >
           <span className="material-symbols-outlined text-[24px]">arrow_back</span>
         </button>
-        <h1 className="font-bold text-lg text-primary tracking-tight">MoneyPal</h1>
-        <span className="w-6" />
+        <h1 className="font-bold text-lg text-primary tracking-tight text-center">MoneyPal</h1>
       </header>
 
       {/* Main */}
       <main className="flex-grow flex flex-col gap-4 px-4 pt-3 pb-4 w-full">
-        {/* Page title */}
-        <div className="pt-2 pb-1">
-          <h2 className="text-2xl font-bold text-primary tracking-tight">Settings</h2>
-          <p className="text-xs text-on-surface-variant">Manage your financial environment.</p>
-        </div>
+
+        {/* ── User Profile Section (Google Auth) ───────────────────── */}
+        <section className="flex flex-col gap-2 pt-1">
+          <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-wider ml-1">Account Profile</h3>
+          <div className="liquid-glass rounded-2xl p-4 flex items-center justify-between border border-white/80 shadow-sm">
+            <div className="flex items-center gap-3 min-w-0">
+              {user?.picture ? (
+                <img
+                  src={user.picture}
+                  alt={user.name}
+                  className="w-12 h-12 rounded-full border-2 border-white/80 shadow-sm object-cover shrink-0"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-pantone-686/30 border-2 border-white/80 shadow-sm flex items-center justify-center text-xl shrink-0">
+                  👤
+                </div>
+              )}
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h2 className="font-extrabold text-[16px] text-primary truncate leading-snug">
+                    {user?.name || 'User Profile'}
+                  </h2>
+                  <span className="text-[10px] font-bold bg-[#E47A9D]/15 text-[#8C3252] border border-[#E47A9D]/30 px-1.5 py-0.5 rounded-full shrink-0">
+                    Google
+                  </span>
+                </div>
+                <p className="text-xs text-on-surface-variant truncate font-medium">
+                  {user?.email || 'Authenticated'}
+                </p>
+              </div>
+            </div>
+
+            {/* Logout button */}
+            <button
+              type="button"
+              onClick={logout}
+              className="text-xs font-bold text-rose-700 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full transition-all active:scale-95 shrink-0 ml-2 tap-feedback"
+            >
+              Sign Out
+            </button>
+          </div>
+        </section>
 
         {/* Budgeting */}
         <section className="flex flex-col gap-2">
@@ -304,7 +342,7 @@ export const SettingsPage: React.FC = () => {
         {/* Footer */}
         <div className="text-center text-xs text-on-surface-variant opacity-60 py-3">
           <p>MoneyPal — Serene Ledger</p>
-          <p className="mt-0.5">Version 1.0.0 · Local Database Mode</p>
+          <p className="mt-0.5">Version 2.0.0 · Google Auth Profile</p>
         </div>
       </main>
     </div>

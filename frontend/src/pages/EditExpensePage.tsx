@@ -28,7 +28,7 @@ export const EditExpensePage: React.FC = () => {
 
   const [amount, setAmount] = useState('0');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'credit'>('cash');
+  const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit'>('debit');
   const [note, setNote] = useState('');
   const [occurredAt, setOccurredAt] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -38,7 +38,8 @@ export const EditExpensePage: React.FC = () => {
     if (expense) {
       setAmount(String(expense.amount));
       setSelectedCategoryId(expense.category_id);
-      setPaymentMethod(expense.payment_method);
+      const method = expense.payment_method?.toLowerCase() === 'credit' ? 'credit' : 'debit';
+      setPaymentMethod(method);
       setNote(expense.note || '');
       const date = new Date(expense.occurred_at);
       const tzOffset = date.getTimezoneOffset() * 60000;
@@ -114,31 +115,31 @@ export const EditExpensePage: React.FC = () => {
   const hasAmount = parseFloat(amount) > 0;
 
   return (
-    <div className="flex flex-col w-full min-h-full pb-[85px] select-none">
+    <div className="flex flex-col w-full h-full overflow-y-auto no-scrollbar pb-[85px] select-none">
       {/* Header */}
-      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 flex justify-between items-center px-5 h-14 border-b border-on-primary-container/10 shadow-sm">
+      <header className="bg-surface/40 backdrop-blur-xl sticky top-0 left-0 right-0 w-full z-40 relative flex justify-center items-center px-5 pt-3.5 pb-2 border-b border-on-primary-container/10 shadow-sm">
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
+          className="absolute left-5 top-3.5 text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95"
           aria-label="Close"
         >
           <span className="material-symbols-outlined text-[24px]">close</span>
         </button>
-        <h1 className="font-bold text-lg text-primary tracking-tight">Edit Expense</h1>
+        <h1 className="font-bold text-lg text-primary tracking-tight text-center">Edit Expense</h1>
         <button
           type="button"
           onClick={handleDelete}
           disabled={isDeleting}
           aria-label="Delete expense"
-          className="text-error/70 hover:text-error transition-colors active:scale-95 disabled:opacity-40"
+          className="absolute right-5 top-3.5 text-error/70 hover:text-error transition-colors active:scale-95 disabled:opacity-40"
         >
           <span className="material-symbols-outlined text-[24px]">delete</span>
         </button>
       </header>
 
       {/* Main Canvas */}
-      <div className="flex-1 flex flex-col px-4 pb-4 pt-2 w-full justify-between overflow-y-auto no-scrollbar">
+      <div className="flex-1 flex flex-col px-4 pb-4 pt-2 w-full justify-between">
         {/* Amount */}
         <section className="flex flex-col items-center py-2">
           <AmountDisplay amount={amount} currency={settings?.currency || 'INR'} />
@@ -177,9 +178,6 @@ export const EditExpensePage: React.FC = () => {
         {/* Keypad + Controls */}
         <section className="flex flex-col gap-2 w-full mt-auto liquid-glass rounded-2xl p-3">
           <Numpad onKeyPress={handleKeyPress} />
-          <div className="flex justify-center">
-            <PaymentToggle method={paymentMethod} onChange={setPaymentMethod} />
-          </div>
           <button
             type="button"
             disabled={!hasAmount || isSaving || selectedCategoryId === null}
