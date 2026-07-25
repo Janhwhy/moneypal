@@ -55,7 +55,7 @@ function App() {
       <AuthProvider>
         <Router>
           {/* Desktop outer canvas */}
-          <div className="min-h-screen bg-[#F4F0EB] text-on-background font-sans selection:bg-[#E47A9D]/30 flex justify-center items-center">
+          <div className="min-h-[100dvh] bg-[#F4F0EB] text-on-background font-sans selection:bg-[#E47A9D]/30 flex justify-center items-center">
             <AppContent />
           </div>
         </Router>
