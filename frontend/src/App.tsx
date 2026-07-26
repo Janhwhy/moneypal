@@ -25,7 +25,7 @@ function AppContent() {
   const showNav = Boolean(token) && location.pathname !== '/login';
 
   return (
-    <div className="w-full max-w-[430px] h-[100dvh] md:h-[880px] md:my-auto md:rounded-[48px] md:shadow-[0_20px_60px_rgba(140,50,82,0.15)] md:border-[8px] md:border-[#FFFFFF] relative flex flex-col overflow-hidden bg-background">
+    <div className="w-full max-w-[430px] h-full md:h-[880px] md:my-auto md:rounded-[48px] md:shadow-[0_20px_60px_rgba(140,50,82,0.15)] md:border-[8px] md:border-[#FFFFFF] relative flex flex-col overflow-hidden bg-background">
       <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden relative bg-background">
         <Routes>
           {/* Public */}
@@ -55,7 +55,7 @@ function App() {
       <AuthProvider>
         <Router>
           {/* Desktop outer canvas */}
-          <div className="min-h-[100dvh] bg-[#F4F0EB] text-on-background font-sans selection:bg-[#E47A9D]/30 flex justify-center items-center">
+          <div className="h-full w-full bg-[#F4F0EB] text-on-background font-sans selection:bg-[#E47A9D]/30 flex justify-center items-center">
             <AppContent />
           </div>
         </Router>
