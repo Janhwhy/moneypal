@@ -5,6 +5,7 @@
 @layer base {
   html, body {
     height: 100%;
+    height: -webkit-fill-available;
     width: 100%;
     position: fixed;
     top: 0;
@@ -23,6 +24,7 @@
   }
   #root {
     height: 100%;
+    height: -webkit-fill-available;
     width: 100%;
     overflow: hidden;
   }
