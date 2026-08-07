@@ -130,7 +130,7 @@ export const TapPage: React.FC = () => {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add a note…"
-              className="w-full liquid-glass rounded-xl py-1.5 pl-8 pr-3 text-[#1D1C1E] text-[13px] focus:ring-1 focus:ring-[#E47A9D] outline-none border border-[#E47A9D]/20 placeholder:text-[#6E6B73]/60 resize-none leading-tight transition-all"
+              className="w-full liquid-glass rounded-xl py-1.5 pl-8 pr-3 text-[#1D1C1E] text-[16px] focus:ring-1 focus:ring-[#E47A9D] outline-none border border-[#E47A9D]/20 placeholder:text-[#6E6B73]/60 resize-none leading-tight transition-all"
             />
           </div>
         </div>

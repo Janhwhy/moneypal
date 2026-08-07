@@ -310,7 +310,7 @@ export const SettingsPage: React.FC = () => {
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
                 placeholder="New category name..."
-                className="flex-1 bg-transparent border-none outline-none text-sm font-semibold text-[#1D1C1E] placeholder:text-[#6E6B73]/50"
+                className="flex-1 bg-transparent border-none outline-none text-[16px] font-semibold text-[#1D1C1E] placeholder:text-[#6E6B73]/50"
               />
               <button
                 type="submit"

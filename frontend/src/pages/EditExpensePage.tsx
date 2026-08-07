@@ -162,7 +162,7 @@ export const EditExpensePage: React.FC = () => {
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add a note..."
-              className="w-full liquid-glass rounded-xl py-2 pl-9 pr-3 text-[#1D1C1E] text-[14px] focus:ring-1 focus:ring-[#E47A9D] outline-none border border-[#E47A9D]/20 placeholder:text-[#6E6B73]/50 shadow-sm"
+              className="w-full liquid-glass rounded-xl py-2 pl-9 pr-3 text-[#1D1C1E] text-[16px] focus:ring-1 focus:ring-[#E47A9D] outline-none border border-[#E47A9D]/20 placeholder:text-[#6E6B73]/50 shadow-sm"
             />
           </div>
           <div className="flex items-center liquid-glass rounded-xl py-2 px-3 gap-2 border border-[#E47A9D]/20 shadow-sm">
@@ -171,7 +171,7 @@ export const EditExpensePage: React.FC = () => {
               type="datetime-local"
               value={occurredAt}
               onChange={(e) => setOccurredAt(e.target.value)}
-              className="bg-transparent text-[#1D1C1E] text-[14px] font-medium focus:outline-none flex-1 appearance-none"
+              className="bg-transparent text-[#1D1C1E] text-[16px] font-medium focus:outline-none flex-1 appearance-none"
             />
           </div>
         </section>

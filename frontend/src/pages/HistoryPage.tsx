@@ -122,7 +122,7 @@ export const HistoryPage: React.FC = () => {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search transactions"
             placeholder="Search transactions..."
-            className="w-full bg-white/80 border border-[#E47A9D]/20 focus:border-[#E47A9D] text-[#1D1C1E] py-2 pl-9 pr-3 rounded-xl transition-all text-[14px] outline-none placeholder:text-[#6E6B73]/60 shadow-sm"
+            className="w-full bg-white/80 border border-[#E47A9D]/20 focus:border-[#E47A9D] text-[#1D1C1E] py-2 pl-9 pr-3 rounded-xl transition-all text-[16px] outline-none placeholder:text-[#6E6B73]/60 shadow-sm"
           />
         </div>
 
