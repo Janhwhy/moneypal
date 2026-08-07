@@ -16,14 +16,15 @@ jobs:
           URL=${BACKEND_URL:-"https://moneypal.onrender.com/"}
           echo "Pinging backend at $URL..."
 
-          # Using curl with a timeout to fail fast if it doesn't respond
-          response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 $URL)
+          # Render cold starts can take 30-50s, so allow enough time to wake it,
+          # and never let a slow/failed curl (set -e) kill this step.
+          response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$URL" || echo "000")
 
           if [ "$response" -eq 200 ]; then
             echo "Successfully pinged backend. Status: $response"
           else
-            echo "Failed to ping backend or received non-200 status. Status: $response"
-            # We exit 0 anyway because we just want to wake it up, and if it's starting up it might time out.
+            echo "Backend did not return 200 (status: $response). This is fine if it was just waking up."
           fi
+          exit 0
         env:
           BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
